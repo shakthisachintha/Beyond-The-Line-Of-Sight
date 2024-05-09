@@ -9,3 +9,16 @@ export interface Position {
     x: number;
     y: number;
 }
+
+export enum DrawingColor {
+    RED = 'red',
+    GREEN = 'green',
+    BLUE = 'blue',
+    YELLOW = 'yellow',
+    PURPLE = 'purple',
+    ORANGE = 'orange',
+    PINK = 'pink',
+    BROWN = 'brown',
+    CYAN = 'cyan',
+    MAGENTA = 'magenta'
+}

@@ -18,11 +18,13 @@ interface DebugModeOptions {
 export interface Canvas {
     drawBackdrop(config: BacdropConfig): void;
     drawRectangle(id: string, x: number, y: number, width: number, height: number, fillColor: string, strokeColor: string, strokeWidth: number): void;
+    drawText(id: string, x: number, y: number, text: string, color: string, size: number): void;
     moveObejct(id: string, position: Position): void;
     enableDebugMode(options: DebugModeOptions): void;
     disableDebugMode(): void;
     drawCircle(id: string, x: number, y: number, radius: number, fillColor: string, strokeColor: string, strokeWidth: number): void;
     drawLine(id: string, x1: number, y1: number, x2: number, y2: number, strokeColor: string, strokeWidth: number): void;
+    drawContiguousLine(id: string, points: Position[], strokeColor: string, strokeWidth: number): void;
     clearLines(): void;
     removeObject(id: string): void;
     setScale(scale: number): void;
@@ -209,6 +211,18 @@ class GraphicsAdapter implements Canvas {
         this.objects.push({ id, shape: circle });
     }
 
+    drawText(id: string, x: number, y: number, text: string, color: string, size: number) {
+        const textObj = new Konva.Text({
+            x: x * this.scale,
+            y: y * this.scale,
+            text,
+            fontSize: size * this.scale,
+            fill: color
+        });
+        this.layer.add(textObj);
+        this.objects.push({ id, shape: textObj });
+    }
+
     drawLine(id: string, x1: number, y1: number, x2: number, y2: number, strokeColor: string, strokeWidth: number) {
         const line = new Konva.Line({
             points: [x1 * this.scale, y1 * this.scale, x2 * this.scale, y2 * this.scale],
@@ -218,6 +232,16 @@ class GraphicsAdapter implements Canvas {
         this.layer.add(line);
         this.objects.push({ id, shape: line });
 
+    }
+
+    drawContiguousLine(id: string, points: Position[], strokeColor: string, strokeWidth: number) {
+        const line = new Konva.Line({
+            points: points.map(point => [point.x * this.scale, point.y * this.scale]).flat(),
+            stroke: strokeColor,
+            strokeWidth
+        });
+        this.layer.add(line);
+        this.objects.push({ id, shape: line });
     }
 
     clearLines() {
@@ -232,3 +256,4 @@ class GraphicsAdapter implements Canvas {
 }
 
 export const CanvasImpl: Canvas = new GraphicsAdapter("container");
+export const MapCanvasImpl: Canvas = new GraphicsAdapter("map-container");

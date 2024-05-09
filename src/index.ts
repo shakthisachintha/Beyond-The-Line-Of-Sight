@@ -7,7 +7,8 @@ import { UwbTag } from './UWB/Tag';
 import '../main.css'
 import { globalConfigsProvider } from './configs';
 import { Human } from './Human/Human';
-import { Position } from './types';
+import { DrawingColor, Position } from './types';
+import { getMapBuilder } from './MapBuilder/MapBuilder';
 
 // create a randpom environment with obstacles
 // the paths should have a width of 20
@@ -75,7 +76,19 @@ env.addObject(uwbTagHuman);
 human.attachUwbTag(uwbTagHuman);
 human.roam();
 
-const humanTravelMap: Position[] = [];
+const humanTravelMap = getMapBuilder("human-travel-map", DrawingColor.BLUE);
+setInterval(() => {
+    const position = uwbTagHuman.getPosition();
+    // if still at the same position, don't add to the map
+    humanTravelMap.addPosition(position);
+}, 400)
+
+const robotTravelMap = getMapBuilder("robot-travel-map", DrawingColor.RED);
+setInterval(() => {
+    const position = uwbTagRobot.getPosition();
+    // if still at the same position, don't add to the map
+    robotTravelMap.addPosition(position);
+}, 400)
 
 // move the robot around with the arrow keys
 document.addEventListener('keydown', (event) => {

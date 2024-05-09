@@ -1,7 +1,4 @@
-interface Position {
-    x: number;
-    y: number;
-}
+import { Position } from "./types";
 
 // this should return 4 items in the array each should have 2 positions in it starting and ending of a line
 export function getRectangleLines(origin: Position, width: number, height: number): [Position[], Position[], Position[], Position[]] {
@@ -50,4 +47,8 @@ export function getDistanceToLine(lineStart: Position, lineEnd: Position, point:
 
     const distance = numerator / denominator;
     return distance;
+}
+
+export function humanizeString(str: string): string {
+    return str.replace(/([A-Z])/g, ' $1').replace(/^./, function (str) { return str.toUpperCase(); });
 }

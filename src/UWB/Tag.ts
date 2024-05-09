@@ -1,13 +1,12 @@
 import { globalConfigsProvider } from "../configs";
 import { BaseObject } from "../Environment/BaseObject";
+import { DrawingColor } from "../types";
 import { UwbAnchor } from "./Anchor";
 
 interface TagBearing {
     anchor: string,
     distance: number,
 }
-
-const colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange', 'pink', 'brown', 'cyan', 'magenta']
 
 export class UwbTag extends BaseObject {
 
@@ -53,14 +52,16 @@ export class UwbTag extends BaseObject {
 
     drawDistanceLines(): void {
         this.linkedAnchor.forEach((anchor, index) => {
-            this.canvas?.drawLine(`${this.id}-${anchor.getID()}`, this.x, this.y, anchor.x, anchor.y, colors[index], 1);
+            const color = Object.values(DrawingColor)[index];
+            this.canvas?.drawLine(`${this.id}-${anchor.getID()}`, this.x, this.y, anchor.x, anchor.y, color, 1);
         });
     }
 
     drawDistanceCircles(): void {
         this.linkedAnchor.forEach((anchor, index) => {
+            const color = Object.values(DrawingColor)[index];
             const distance = Math.sqrt(Math.pow(anchor.x - this.x, 2) + Math.pow(anchor.y - this.y, 2));
-            this.canvas?.drawCircle(`${this.id}-${anchor.getID()}`, anchor.x, anchor.y, distance, 'transparent', colors[index], 1);
+            this.canvas?.drawCircle(`${this.id}-${anchor.getID()}`, anchor.x, anchor.y, distance, 'transparent', color, 1);
         });
     }
 

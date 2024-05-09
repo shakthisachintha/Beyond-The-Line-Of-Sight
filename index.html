@@ -9,34 +9,47 @@
 </head>
 
 <body>
-    <div id="container"></div>
-    <button id="addObs">ADD OBSTACTLES</button>
-    <button id="removeObs">REMOVE OBSTACLE</button>
-
-    <div class="configs-container">
-        <div class="title">Configs</div>
-        <div class="body">
-            <div class="config-item">
-                <div><input type="checkbox" id="enableObstacleLines"></div>
-                <div>Enable Obstacle Lines</div>
-            </div>
-
-            <div class="config-item">
-                <div><input type="checkbox" id="showUwbDistanceLines"></div>
-                <div>Enable UWB Distance Lines</div>
-            </div>
-
-            <div class="config-item">
-                <div><input type="checkbox" id="showUwbDistanceCircles"></div>
-                <div>Enable UWB Distance Circles</div>
-            </div>
-
-            <div class="config-item">
-                <div><input type="checkbox" id="showDebugLabels"></div>
-                <div>Show Debug Labels</div>
+    <div class="main-container">
+        <div class="row">
+            <div id="container"></div>
+            <div>
+                <div class="row">
+                    <div id="map-container" class="map-container"></div>
+                </div>
             </div>
         </div>
 
+        <div class="row">
+            <div>
+                <button id="addObs">ADD OBSTACTLES</button>
+                <button id="removeObs">REMOVE OBSTACLE</button>
+            </div>
+
+            <div class="configs-container">
+                <div class="title">Configs</div>
+                <div class="body">
+                    <div class="config-item">
+                        <div><input type="checkbox" id="enableObstacleLines"></div>
+                        <div>Enable Obstacle Lines</div>
+                    </div>
+
+                    <div class="config-item">
+                        <div><input type="checkbox" id="showUwbDistanceLines"></div>
+                        <div>Enable UWB Distance Lines</div>
+                    </div>
+
+                    <div class="config-item">
+                        <div><input type="checkbox" id="showUwbDistanceCircles"></div>
+                        <div>Enable UWB Distance Circles</div>
+                    </div>
+
+                    <div class="config-item">
+                        <div><input type="checkbox" id="showDebugLabels"></div>
+                        <div>Show Debug Labels</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 
