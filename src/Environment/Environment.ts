@@ -3,28 +3,15 @@ import { BaseObject } from "./BaseObject";
 import { Obstacle } from "./Obstacle";
 import { checkTwoLinesIntersects, getRectangleLines, getDistanceToLine } from "../utils";
 import { globalConfigsProvider } from "../configs";
-
-interface Size {
-    width: number;
-    height: number;
-}
-
-export interface SurrondingDistances {
-    up: number;
-    down: number;
-    left: number;
-    right: number;
-}
+import { SurrondingDistances } from "../types";
 
 export class Environment {
     private id: string = `env-${Math.random().toString(36).substring(2, 9)}`;
-    private size: Size = { width: 100, height: 100 };
     private backgroundColor: string = "#FFFFF1";
     private objects: BaseObject[] = [];
     private canvas: Canvas;
 
     constructor(width: number, height: number, canvas: Canvas) {
-        this.size = { width, height };
         this.canvas = canvas;
         canvas.drawBackdrop({ width, height, fillColor: this.backgroundColor, strokeColor: 'black' });
     }
