@@ -77,8 +77,4 @@ export class UwbTag extends BaseObject {
     draw(): void {
         this.canvas?.drawCircle(this.id, this.x, this.y, 0.5, 'green', 'black', 1);
     }
-
-    move(direction: "up" | "down" | "left" | "right", distance: number): void {
-        throw new Error("Method not implemented.");
-    }
 }

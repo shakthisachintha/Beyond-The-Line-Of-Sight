@@ -1,4 +1,5 @@
 import Konva from "konva";
+import { Position } from "../types";
 
 interface BacdropConfig {
     width: number;
@@ -30,11 +31,6 @@ export interface Canvas {
 interface ObjectData {
     id: string;
     shape: Konva.Shape;
-}
-
-export interface Position {
-    x: number;
-    y: number;
 }
 
 class GraphicsAdapter implements Canvas {

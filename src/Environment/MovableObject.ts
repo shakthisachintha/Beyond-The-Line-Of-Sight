@@ -5,6 +5,7 @@ import { Environment } from "./Environment";
 
 export abstract class MovableObject extends BaseObject {
     protected radius: number = 1;
+    protected travelDistance: number = 1;
     protected direction: number = 0;
     protected env: Environment;
     protected uwbTag: UwbTag | null = null;
@@ -19,9 +20,9 @@ export abstract class MovableObject extends BaseObject {
         this.uwbTag.setPosition(this.x, this.y);
     }
 
-    move(direction: "up" | "down" | "left" | "right", distance: number): void {
+    move(direction: "up" | "down" | "left" | "right"): void {
         const scanResult = this.scan(this.radius * 2.5);  // Scan for obstacles ahead
-
+        const distance = this.travelDistance;
         // Calculate target position based on direction and distance
         let targetX = this.x;
         let targetY = this.y;

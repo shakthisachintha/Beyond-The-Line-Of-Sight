@@ -39,6 +39,4 @@ export abstract class BaseObject {
     }
 
     abstract draw(): void;
-
-    abstract move(direction: Direction, distance: number): void;
 }

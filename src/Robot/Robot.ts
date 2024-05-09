@@ -1,20 +1,12 @@
-
-import { UwbTag } from "../UWB/Tag";
 import { Environment } from "../Environment/Environment";
-import { Canvas } from "../Graphics/Graphics";
 import { MovableObject } from "../Environment/MovableObject";
 
 export class Robot extends MovableObject {
 
-    constructor(x: number, y: number, canvas: Canvas, env: Environment) {
+    constructor(x: number, y: number, env: Environment) {
         super(x, y, env);
-        this.canvas = canvas;
+        this.fillColor = "#FF0000"; 
         this.id = `robot-${Math.random().toString(36).substring(2, 9)}`;
-    }
-
-    attachUwbTag(tag: UwbTag): void {
-        this.uwbTag = tag;
-        this.uwbTag.setPosition(this.x, this.y);
     }
 
     draw(): void {

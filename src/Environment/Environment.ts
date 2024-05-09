@@ -1,9 +1,9 @@
-import { Canvas, Position } from "../Graphics/Graphics";
+import { Canvas } from "../Graphics/Graphics";
 import { BaseObject } from "./BaseObject";
 import { Obstacle } from "./Obstacle";
 import { checkTwoLinesIntersects, getRectangleLines, getDistanceToLine } from "../utils";
 import { globalConfigsProvider } from "../configs";
-import { SurrondingDistances } from "../types";
+import { Position, SurrondingDistances } from "../types";
 
 export class Environment {
     private id: string = `env-${Math.random().toString(36).substring(2, 9)}`;

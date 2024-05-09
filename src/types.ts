@@ -4,3 +4,8 @@ export interface SurrondingDistances {
     left: number;
     right: number;
 }
+
+export interface Position {
+    x: number;
+    y: number;
+}

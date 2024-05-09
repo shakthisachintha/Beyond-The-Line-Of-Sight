@@ -1,10 +1,10 @@
 import { BaseObject } from "../Environment/BaseObject";
-import { Canvas, Position } from "../Graphics/Graphics";
+import { Position } from "../types";
 import { UwbTag } from "./Tag";
 
 export class UwbAnchor extends BaseObject {
 
-    private radius: number = 1;
+    private size: number = 1;
     private color: string = 'blue';
     private tags: UwbTag[] = [];
     private name = 'uwb-anchor';
@@ -30,11 +30,7 @@ export class UwbAnchor extends BaseObject {
     }
 
     draw() {
-        this.canvas?.drawCircle(this.id, this.x, this.y, this.radius, this.color, 'black', 1);
-    }
-
-    move(direction: "up" | "down" | "left" | "right", distance: number): void {
-        throw new Error("Method not supported.");
+        this.canvas?.drawRectangle(this.id, this.x, this.y, this.size, this.size, this.color, this.color, 1);
     }
 
     getPosition(): Position {

@@ -7,6 +7,7 @@ import { UwbTag } from './UWB/Tag';
 import '../main.css'
 import { globalConfigsProvider } from './configs';
 import { Human } from './Human/Human';
+import { Position } from './types';
 
 // create a randpom environment with obstacles
 // the paths should have a width of 20
@@ -46,14 +47,12 @@ function createEnvironment(configs: any) {
     return env;
 }
 
-// CanvasImpl.enableDebugMode({ mapScale: configs.env.width/100, showCoordinates: true, showDimensions: true});
-
 const env = createEnvironment(configs);
-const robot = new Robot(5, 95, CanvasImpl, env);
+const robot = new Robot(5, 95, env);
 env.addObject(robot);
 
-const anchor1 = new UwbAnchor(1, 1, "anchor_a");
-const anchor2 = new UwbAnchor(99, 1, "anchor_b");
+const anchor1 = new UwbAnchor(0, 0, "anchor_a");
+const anchor2 = new UwbAnchor(99, 0, "anchor_b");
 const anchor3 = new UwbAnchor(99, 99, "anchor_c");
 env.addObject(anchor1);
 env.addObject(anchor2);
@@ -74,22 +73,24 @@ uwbTagHuman.attachAnchor(anchor2);
 uwbTagHuman.attachAnchor(anchor3);
 env.addObject(uwbTagHuman);
 human.attachUwbTag(uwbTagHuman);
-human.roam()
+human.roam();
+
+const humanTravelMap: Position[] = [];
 
 // move the robot around with the arrow keys
 document.addEventListener('keydown', (event) => {
     switch (event.key) {
         case "ArrowUp":
-            robot.move("up", 1);
+            human.move("up");
             break;
         case "ArrowDown":
-            robot.move("down", 1);
+            human.move("down");
             break;
         case "ArrowLeft":
-            robot.move("left", 1);
+            human.move("left");
             break;
         case "ArrowRight":
-            robot.move("right", 1);
+            human.move("right");
             break;
     }
 });
