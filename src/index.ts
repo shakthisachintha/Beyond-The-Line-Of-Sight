@@ -1,56 +1,148 @@
-import * as k from 'konva';
-const Konva = k.default;
+import { Robot } from './Robot/Robot';
+import { Environment } from './Environment/Environment';
+import { Obstacle } from './Environment/Obstacle';
+import { CanvasImpl } from './Graphics/Graphics';
+import { UwbAnchor } from './UWB/Anchor';
+import { UwbTag } from './UWB/Tag';
+import '../main.css'
+import { globalConfigsProvider } from './configs';
+import { Human } from './Human/Human';
 
-if (document !== undefined) {
+// create a randpom environment with obstacles
+// the paths should have a width of 20
+const configs = {
+    env: {
+        width: 100,
+        height: 100
+    },
+    // cords: [x, y], dims: [width, height]
+    obstacles: [
+        { cords: [0, 0], dims: [25, 10] },
+        { cords: [10, 20], dims: [15, 15] },
+        { cords: [10, 45], dims: [20, 15] },
+        { cords: [0, 70], dims: [30, 20] },
+        { cords: [40, 85], dims: [25, 15] },
+        { cords: [40, 70], dims: [10, 15] },
+        { cords: [75, 85], dims: [25, 15] },
+        { cords: [60, 40], dims: [30, 35] },
+        { cords: [40, 40], dims: [20, 20] },
+        { cords: [70, 10], dims: [20, 20] },
+        { cords: [35, 10], dims: [25, 20] },
+    ]
+}
 
-    var width = window.innerWidth;
-    var height = window.innerHeight;
-
-    const stage = new Konva.Stage({
-        container: 'content',
-        width: width,
-        height: height,
+// should normalize the configs
+// obstacles are created in a scale where 100,100 env.
+// should normalize the obstacles to the environment scale
+function createEnvironment(configs: any) {
+    const scale = 8
+    CanvasImpl.setScale(scale);
+    const env = new Environment(configs.env.width, configs.env.height, CanvasImpl);
+    configs.obstacles.forEach((config: any) => {
+        const obstacle = new Obstacle(config.dims[0], config.dims[1], config.cords[0], config.cords[1]);
+        env.addObject(obstacle);
     });
 
-    var layer = new Konva.Layer();
-
-      var rect1 = new Konva.Rect({
-        x: 20,
-        y: 20,
-        width: 101,
-        height: 50,
-        fill: 'green',
-        stroke: 'red',
-        strokeWidth: 4,
-      });
-      // add the shape to the layer
-      layer.add(rect1);
-
-      var rect2 = new Konva.Rect({
-        x: 150,
-        y: 40,
-        width: 100,
-        height: 50,
-        fill: 'red',
-        shadowBlur: 10,
-        cornerRadius: 10,
-      });
-      layer.add(rect2);
-
-      var rect3 = new Konva.Rect({
-        x: 50,
-        y: 120,
-        width: 100,
-        height: 100,
-        fill: 'red',
-        cornerRadius: [0, 10, 20, 30],
-      });
-      layer.add(rect3);
-
-      // add the layer to the stage
-      stage.add(layer);
+    return env;
 }
-else {
-    // the error code you need to execute when document is undefined. This is equivalent to a general "catch" block
-    console.error("Cannot initialize Konva: document is undefined"); 
-}
+
+// CanvasImpl.enableDebugMode({ mapScale: configs.env.width/100, showCoordinates: true, showDimensions: true});
+
+const env = createEnvironment(configs);
+const robot = new Robot(5, 95, CanvasImpl, env);
+env.addObject(robot);
+
+const anchor1 = new UwbAnchor(1, 1, "anchor_a");
+const anchor2 = new UwbAnchor(99, 1, "anchor_b");
+const anchor3 = new UwbAnchor(99, 99, "anchor_c");
+env.addObject(anchor1);
+env.addObject(anchor2);
+env.addObject(anchor3);
+
+const uwbTagRobot = new UwbTag(20, 30);
+uwbTagRobot.attachAnchor(anchor1);
+uwbTagRobot.attachAnchor(anchor2);
+uwbTagRobot.attachAnchor(anchor3);
+env.addObject(uwbTagRobot);
+robot.attachUwbTag(uwbTagRobot);
+
+const human = new Human(20, 95, env);
+env.addObject(human);
+const uwbTagHuman = new UwbTag(20, 95);
+uwbTagHuman.attachAnchor(anchor1);
+uwbTagHuman.attachAnchor(anchor2);
+uwbTagHuman.attachAnchor(anchor3);
+env.addObject(uwbTagHuman);
+human.attachUwbTag(uwbTagHuman);
+human.roam()
+
+// move the robot around with the arrow keys
+document.addEventListener('keydown', (event) => {
+    switch (event.key) {
+        case "ArrowUp":
+            robot.move("up", 1);
+            break;
+        case "ArrowDown":
+            robot.move("down", 1);
+            break;
+        case "ArrowLeft":
+            robot.move("left", 1);
+            break;
+        case "ArrowRight":
+            robot.move("right", 1);
+            break;
+    }
+});
+
+const tempObsId = "temp-obstacle-1"
+document.getElementById("addObs")?.addEventListener('click', () => {
+    const x = 32;
+    const y = 80
+    const width = 5;
+    const height = 5;
+    const obstacle = new Obstacle(width, height, x, y);
+    obstacle.setID(tempObsId);
+    obstacle.setFillColor('brown');
+    obstacle.setStroke('brown');
+    env.addObject(obstacle);
+});
+
+document.getElementById("removeObs")?.addEventListener('click', () => {
+    env.removeObject(tempObsId);
+});
+
+document.getElementById("enableObstacleLines")?.addEventListener('change', (event) => {
+    const checkbox = event.target as HTMLInputElement;
+    if (checkbox.checked) {
+        globalConfigsProvider.setConfig('showObstacleDetectionLines', true);
+    } else {
+        globalConfigsProvider.setConfig('showObstacleDetectionLines', false);
+    }
+});
+
+document.getElementById("showDebugLabels")?.addEventListener('change', (event) => {
+    const checkbox = event.target as HTMLInputElement;
+    if (checkbox.checked) {
+        CanvasImpl.enableDebugMode({ mapScale: configs.env.width / 100, showCoordinates: true, showDimensions: true });
+    } else {
+        CanvasImpl.disableDebugMode();
+    }
+});
+
+document.getElementById("showUwbDistanceCircles")?.addEventListener('change', (event) => {
+    const checkbox = event.target as HTMLInputElement;
+    if (checkbox.checked) {
+        globalConfigsProvider.setConfig('showUwbDistanceCircles', true);
+    } else {
+        globalConfigsProvider.setConfig('showUwbDistanceCircles', false);
+    }
+});
+
+document.getElementById("showUwbDistanceLines")?.addEventListener('change', (event) => {
+    const checkbox = event.target as HTMLInputElement;
+    if (checkbox.checked) {
+        globalConfigsProvider.setConfig('showUwbDistanceLines', true);
+    } else {
+        globalConfigsProvider.setConfig('showUwbDistanceLines', false);
+    }
+});

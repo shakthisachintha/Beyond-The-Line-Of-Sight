@@ -4,6 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
     mode: 'development', // Set to 'production' for optimized builds
     entry: './src/index.ts', // Your main TypeScript file
+    devtool: 'cheap-module-source-map', // Or another suitable source map option
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'), // Output folder
@@ -15,6 +16,10 @@ module.exports = {
                 use: 'ts-loader',
                 exclude: /node_modules/,
             },
+            {
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader']
+              }
         ],
     },
     plugins: [
