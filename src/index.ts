@@ -144,6 +144,7 @@ function followHuman(humanMap: Position[], robot: Robot) {
     // calcuate a moving average of the last 5 positions
     const movingAverage = 5;
     humanMap = humanMap.slice(0, humanMap.length - 2);
+    if (humanMap.length < movingAverage) return;
     const lastPositions = humanMap.slice(-movingAverage);
     const averageX = lastPositions.reduce((acc, pos) => acc + pos.x, 0) / movingAverage;
     const averageY = lastPositions.reduce((acc, pos) => acc + pos.y, 0) / movingAverage;

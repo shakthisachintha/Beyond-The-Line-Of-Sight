@@ -30,7 +30,7 @@ class MapBuider {
                 // if current position is within the 1 radius circle of the last position, do not add it
                 if (mapEntry.positions.length > 0) {
                     const distance = Math.sqrt(Math.pow(position.x - lastPosition?.x, 2) + Math.pow(position.y - lastPosition?.y, 2));
-                    if (distance > 1) {
+                    if (distance > 2) {
                         mapEntry.positions.push(position);
                         this.drawMapLinePolygon(mapName);
                     }
