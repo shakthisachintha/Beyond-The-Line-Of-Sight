@@ -1,16 +1,12 @@
 import { globalConfigsProvider } from "../configs";
 import { BaseObject } from "../Environment/BaseObject";
-import { DrawingColor } from "../types";
+import { DrawingColor, TagBearing } from "../types";
 import { UwbAnchor } from "./Anchor";
-
-interface TagBearing {
-    anchor: string,
-    distance: number,
-}
 
 export class UwbTag extends BaseObject {
 
     private linkedAnchor: UwbAnchor[] = [];
+    private errorPercentage: number = 0.01;
 
     constructor(x: number, y: number) {
         super(x, y);
@@ -27,8 +23,11 @@ export class UwbTag extends BaseObject {
 
     getBearing(): TagBearing[] {
         return this.linkedAnchor.map(anchor => {
-            const distance = Math.sqrt(Math.pow(anchor.x - this.x, 2) + Math.pow(anchor.y - this.y, 2));
-            return { anchor: anchor.getName(), distance };
+            // error should be plus or minus 3%
+            const distance = Math.sqrt(Math.pow(anchor.x - this.x, 2) + Math.pow(anchor.y - this.y, 2)) * (1 + (Math.random() * this.errorPercentage));
+            return {
+                anchor: anchor.getName(), distance, anchorPosition: { x: anchor.x, y: anchor.y }
+            };
         });
     }
 

@@ -50,5 +50,8 @@ export function getDistanceToLine(lineStart: Position, lineEnd: Position, point:
 }
 
 export function humanizeString(str: string): string {
-    return str.replace(/([A-Z])/g, ' $1').replace(/^./, function (str) { return str.toUpperCase(); });
+    // remove dashes and underscores
+    str = str.replace(/-|_/g, ' ');
+    // capitalize first letter
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }

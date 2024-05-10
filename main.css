@@ -5,6 +5,18 @@
         justify-content: center;
         align-items: center;
     }
+
+    .map-container{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-left: 10px;
+        .map {
+            width: 100%;
+            height: 100%;
+        }
+    }
     .configs-container {
         display: flex;
         flex-direction: column;

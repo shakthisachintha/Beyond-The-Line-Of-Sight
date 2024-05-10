@@ -1,4 +1,4 @@
-import { SurrondingDistances } from "../types";
+import { Direction, Position, SurrondingDistances } from "../types";
 import { UwbTag } from "../UWB/Tag";
 import { BaseObject } from "./BaseObject";
 import { Environment } from "./Environment";
@@ -20,9 +20,16 @@ export abstract class MovableObject extends BaseObject {
         this.uwbTag.setPosition(this.x, this.y);
     }
 
-    move(direction: "up" | "down" | "left" | "right"): void {
+    positionMove(target: Position): void {
+        this.x = target.x;
+        this.y = target.y;
+        this.uwbTag?.setPosition(this.x, this.y);
+        this.canvas?.moveObejct(this.id, { x: this.x, y: this.y });
+    }
+
+    move(direction: Direction, displacement?: number): void {
         const scanResult = this.scan(this.radius * 2.5);  // Scan for obstacles ahead
-        const distance = this.travelDistance;
+        const distance = displacement || this.travelDistance;
         // Calculate target position based on direction and distance
         let targetX = this.x;
         let targetY = this.y;

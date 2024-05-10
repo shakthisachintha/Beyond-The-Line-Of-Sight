@@ -10,6 +10,14 @@ export interface Position {
     y: number;
 }
 
+export interface TagBearing {
+    anchor: string,
+    anchorPosition: Position,
+    distance: number,
+}
+
+export type Direction = "up" | "down" | "left" | "right";
+
 export enum DrawingColor {
     RED = 'red',
     GREEN = 'green',
