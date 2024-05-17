@@ -4,15 +4,16 @@ import { Obstacle } from './Environment/Obstacle';
 import { CanvasImpl } from './Graphics/Graphics';
 import { UwbAnchor } from './UWB/Anchor';
 import { UwbTag } from './UWB/Tag';
-import '../main.css'
 import { globalConfigsProvider } from './configs';
 import { Human } from './Human/Human';
-import { Direction, DrawingColor, Position, TagBearing } from './types';
+import { DrawingColor, Position, TagBearing } from './types';
 import { getMapBuilder } from './MapBuilder/MapBuilder';
+import '../main.css'
 
 // create a randpom environment with obstacles
 // the paths should have a width of 20
 const configs = {
+    scale: 8,
     env: {
         width: 100,
         height: 100
@@ -37,7 +38,7 @@ const configs = {
 // obstacles are created in a scale where 100,100 env.
 // should normalize the obstacles to the environment scale
 function createEnvironment(configs: any) {
-    const scale = 8
+    const scale = configs.scale;
     CanvasImpl.setScale(scale);
     const env = new Environment(configs.env.width, configs.env.height, CanvasImpl);
     configs.obstacles.forEach((config: any) => {
@@ -49,6 +50,8 @@ function createEnvironment(configs: any) {
 }
 
 const env = createEnvironment(configs);
+
+
 const robot = new Robot(5, 95, env);
 env.addObject(robot);
 

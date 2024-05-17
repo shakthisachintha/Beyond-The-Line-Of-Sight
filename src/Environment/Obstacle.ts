@@ -16,22 +16,4 @@ export class Obstacle extends BaseObject {
     draw() {
         this.canvas?.drawRectangle(this.id, this.x, this.y, this.width, this.height, this.fillColor, this.stroke, this.strokeWidth);
     }
-
-    move(direction: "up" | "down" | "left" | "right", distance: number): void {
-        switch (direction) {
-            case "up":
-                this.y -= distance;
-                break;
-            case "down":
-                this.y += distance;
-                break;
-            case "left":
-                this.x -= distance;
-                break;
-            case "right":
-                this.x += distance;
-                break;
-        }
-        this.canvas?.moveObejct(this.id, { x: this.x, y: this.y });
-    }
 }

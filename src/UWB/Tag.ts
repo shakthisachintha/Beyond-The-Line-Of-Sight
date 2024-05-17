@@ -70,10 +70,6 @@ export class UwbTag extends BaseObject {
         });
     }
 
-    getPosition(): { x: number, y: number } {
-        return { x: this.x, y: this.y };
-    }
-
     draw(): void {
         this.canvas?.drawCircle(this.id, this.x, this.y, 0.5, 'green', 'black', 1);
     }

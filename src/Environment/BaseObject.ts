@@ -1,7 +1,5 @@
 import { Canvas } from "../Graphics/Graphics";
 
-type Direction = 'up' | 'down' | 'left' | 'right';
-
 export abstract class BaseObject {
     protected id: string = `base-object-${Math.random().toString(36).substring(2, 9)}`;
     protected fillColor: string = 'black';

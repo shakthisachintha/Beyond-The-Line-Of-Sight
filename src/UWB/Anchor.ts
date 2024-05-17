@@ -1,12 +1,10 @@
 import { BaseObject } from "../Environment/BaseObject";
 import { Position } from "../types";
-import { UwbTag } from "./Tag";
 
 export class UwbAnchor extends BaseObject {
 
     private size: number = 1;
     private color: string = 'blue';
-    private tags: UwbTag[] = [];
     private name = 'uwb-anchor';
 
     constructor(x: number, y: number, name: string) {
@@ -17,16 +15,8 @@ export class UwbAnchor extends BaseObject {
         this.name = name;
     }
 
-    registerUwbTag(tag: UwbTag): void {
-        this.tags.push(tag);
-    }
-
     getName(): string {
         return this.name;
-    }
-
-    unRegisterUwbTag(tag: UwbTag): void {
-        this.tags = this.tags.filter(t => t.getID() !== tag.getID());
     }
 
     draw() {
