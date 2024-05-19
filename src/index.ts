@@ -13,7 +13,7 @@ import '../main.css'
 // create a randpom environment with obstacles
 // the paths should have a width of 20
 const configs = {
-    scale: 8,
+    scale: 6,
     env: {
         width: 100,
         height: 100
@@ -45,12 +45,10 @@ function createEnvironment(configs: any) {
         const obstacle = new Obstacle(config.dims[0], config.dims[1], config.cords[0], config.cords[1]);
         env.addObject(obstacle);
     });
-
     return env;
 }
 
 const env = createEnvironment(configs);
-
 
 const robot = new Robot(5, 95, env);
 env.addObject(robot);
@@ -141,7 +139,6 @@ setInterval(() => {
     robotTravelMap.addPosition(position);
 }, 100)
 
-let lastMovedPositionIndex = 0;
 
 function followHuman(humanMap: Position[], robot: Robot) {
     // calcuate a moving average of the last 5 positions
@@ -199,6 +196,8 @@ document.addEventListener('keydown', (event) => {
             break;
     }
 });
+
+// env.drawLegend();
 
 const tempObsId = "temp-obstacle-1"
 document.getElementById("addObs")?.addEventListener('click', () => {

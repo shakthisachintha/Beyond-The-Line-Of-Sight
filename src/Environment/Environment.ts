@@ -1,7 +1,7 @@
 import { Canvas } from "../Graphics/Graphics";
 import { BaseObject } from "./BaseObject";
 import { Obstacle } from "./Obstacle";
-import { checkTwoLinesIntersects, getRectangleLines, getDistanceToLine } from "../utils";
+import { checkTwoLinesIntersects, getRectangleLines, getDistanceToLine, humanizeString } from "../utils";
 import { globalConfigsProvider } from "../configs";
 import { Position, SurrondingDistances } from "../types";
 
@@ -14,6 +14,19 @@ export class Environment {
     constructor(width: number, height: number, canvas: Canvas) {
         this.canvas = canvas;
         canvas.drawBackdrop({ width, height, fillColor: this.backgroundColor, strokeColor: 'black' });
+    }
+
+    drawLegend() {
+        const typeOfObjects = this.objects.map(obj => obj.constructor.name);
+        const uniqeObjectTypes = Array.from(new Set(typeOfObjects));
+        const uniqueObjects: BaseObject[] = [];
+        uniqeObjectTypes.forEach(type => {
+            const objectsOfType = this.objects.filter(obj => obj.constructor.name === type);
+            uniqueObjects.push(objectsOfType[0]);
+        });
+        uniqueObjects.forEach((object, index) => {
+            object.drawLegend({ x: 10, y: 1 + (index * 20) });
+        });
     }
 
     addObject(object: BaseObject) {

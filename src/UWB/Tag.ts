@@ -1,6 +1,6 @@
 import { globalConfigsProvider } from "../configs";
 import { BaseObject } from "../Environment/BaseObject";
-import { DrawingColor, TagBearing } from "../types";
+import { DrawingColor, Position, TagBearing } from "../types";
 import { UwbAnchor } from "./Anchor";
 
 export class UwbTag extends BaseObject {
@@ -12,6 +12,12 @@ export class UwbTag extends BaseObject {
         super(x, y);
         this.id = `uwb-tag-${Math.random().toString(36).substring(2, 9)}`;
     }
+
+    drawLegend(position: Position): void {
+        this.canvas?.drawCircle(`${this.id}-legend`, position.x, position.y, 5, this.fillColor, this.stroke, 1);
+        this.canvas?.drawText(`${this.id}-legend`, position.x + 10, position.y + 5, "UWB Tag", "black", 1);
+    }
+
 
     attachAnchor(anchor: UwbAnchor): void {
         this.linkedAnchor.push(anchor);
@@ -36,9 +42,7 @@ export class UwbTag extends BaseObject {
         this.y = y;
         this.canvas?.moveObejct(this.id, { x, y });
 
-        if (globalConfigsProvider.getConfig("showUwbDistanceCircles") || globalConfigsProvider.getConfig("showUwbDistanceLines")) {
-            this.clearDistanceLines();
-        }
+        this.clearDebugDrawings();
 
         if (globalConfigsProvider.getConfig("showUwbDistanceLines")) {
             this.drawDistanceLines();
@@ -64,7 +68,7 @@ export class UwbTag extends BaseObject {
         });
     }
 
-    clearDistanceLines(): void {
+    clearDebugDrawings(): void {
         this.linkedAnchor.forEach(anchor => {
             this.canvas?.removeObject(`${this.id}-${anchor.getID()}`);
         });

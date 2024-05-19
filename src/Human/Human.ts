@@ -1,7 +1,13 @@
 import { Environment } from "../Environment/Environment";
 import { MovableObject } from "../Environment/MovableObject";
+import { Position } from "../types";
 
 export class Human extends MovableObject {
+
+    drawLegend(position: Position): void {
+        this.canvas?.drawCircle(`${this.id}-legend`, position.x, position.y, this.radius, this.fillColor, this.stroke, 1);
+        this.canvas?.drawText(`${this.id}-legend`, position.x + 10, position.y + 5, "Human Subject", "white", 1);
+    }
 
 
     draw(): void {
@@ -10,7 +16,7 @@ export class Human extends MovableObject {
 
     constructor(x: number, y: number, env: Environment) {
         super(x, y, env);
-        this.fillColor = "#FFA0FF"; 
+        this.fillColor = "#FFA0FF";
     }
 
     roam(): void {

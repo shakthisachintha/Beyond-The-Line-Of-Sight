@@ -1,7 +1,14 @@
 import { Environment } from "../Environment/Environment";
 import { MovableObject } from "../Environment/MovableObject";
+import { Position } from "../types";
 
 export class Robot extends MovableObject {
+
+    drawLegend(position: Position): void {
+        this.canvas?.drawCircle(`${this.id}-legend`, position.x, position.y, 5, this.fillColor, this.stroke, 1);
+        this.canvas?.drawText(`${this.id}-legend`, position.x + 10, position.y + 5, "Human Subject", "black", 1);
+    }
+
 
     constructor(x: number, y: number, env: Environment) {
         super(x, y, env);

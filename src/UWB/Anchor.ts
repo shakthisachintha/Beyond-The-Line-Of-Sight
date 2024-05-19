@@ -15,6 +15,12 @@ export class UwbAnchor extends BaseObject {
         this.name = name;
     }
 
+    drawLegend(position: Position): void {
+        this.canvas?.drawRectangle(`${this.id}-legend`, position.x, position.y, 10, 10, this.color, this.color, 1);
+        this.canvas?.drawText(`${this.id}-legend`, position.x + 10, position.y + 5, "UWB Anchor", "black", 1);
+    }
+
+
     getName(): string {
         return this.name;
     }

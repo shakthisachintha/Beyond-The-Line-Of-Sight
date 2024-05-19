@@ -255,5 +255,5 @@ class GraphicsAdapter implements Canvas {
     }
 }
 
-export const CanvasImpl: Canvas = new GraphicsAdapter("container");
+export const CanvasImpl: Canvas = new GraphicsAdapter("simulation-container");
 export const MapCanvasImpl: Canvas = new GraphicsAdapter("map-container");

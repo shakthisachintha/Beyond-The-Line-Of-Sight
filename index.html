@@ -4,53 +4,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My TypeScript Web Page</title>
+    <title>Beyond The Line of Sight</title>
     <base href="/">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet">
 </head>
 
 <body>
     <div class="main-container">
-        <div class="row">
-            <div id="container"></div>
-            <div>
-                <div class="row">
-                    <div id="map-container" class="map-container"></div>
+        <div class="container-fluid">
+            <div class="row justify-content-center">
+                <div class="d-flex flex-column notch-border text-center">
+                    <h3>Beyond Line of Sight: </h3>
+                    <h3>Occlusion Aware Perception for Human-Following Robots</h3>
+                </div>
+            </div>
+
+            <div class="d-flex flex-row mt-2 ps-4 pe-4">
+                <div class="d-flex flex-column border rounded p-2">
+                    <div>
+                        <h5>Simulated Environment</h5>
+                    </div>
+
+                    <div class="d-flex flex-column">
+                        <div id="simulation-container"></div>
+
+                        <div class="d-flex flex-row mt-2 justify-content-between">
+                            <div>
+                                <button class="btn btn-primary" id="addObs"> + ADD OBSTACTLES</button>
+                                <button class="btn btn-primary" id="removeObs"> - REMOVE OBSTACLE</button>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#configModal">
+                                    Configs
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div class="ms-2 d-flex h-100 flex-column border rounded p-2">
+                    <div>
+                        <h5>Explored Map</h5>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div id="map-container"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="row">
-            <div>
-                <button id="addObs">ADD OBSTACTLES</button>
-                <button id="removeObs">REMOVE OBSTACLE</button>
-            </div>
-
-            <div class="configs-container">
-                <div class="title">Configs</div>
-                <div class="body">
-                    <div class="config-item">
-                        <div><input type="checkbox" id="enableObstacleLines"></div>
-                        <div>Enable Obstacle Lines</div>
+        <!-- Modal -->
+        <div class="modal fade" id="configModal" tabindex="-1" aria-labelledby="configModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="configModalLabel">Simulator Configs</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
+                    <div class="modal-body">
+                        <div class="config-item">
+                            <div>Enable Obstacle Lines</div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="enableObstacleLines">
+                            </div>
+                        </div>
 
-                    <div class="config-item">
-                        <div><input type="checkbox" id="showUwbDistanceLines"></div>
-                        <div>Enable UWB Distance Lines</div>
+                        <div class="config-item">
+                            <div>Enable UWB Distance Lines</div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="showUwbDistanceLines">
+                            </div>
+                        </div>
+
+                        <div class="config-item">
+                            <div>Enable UWB Distance Circles</div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                    id="showUwbDistanceCircles">
+                            </div>
+                        </div>
+
+                        <div class="config-item">
+                            <div>Show Debug Labels</div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="showDebugLabels">
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="config-item">
-                        <div><input type="checkbox" id="showUwbDistanceCircles"></div>
-                        <div>Enable UWB Distance Circles</div>
-                    </div>
-
-                    <div class="config-item">
-                        <div><input type="checkbox" id="showDebugLabels"></div>
-                        <div>Show Debug Labels</div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
 
 </html>

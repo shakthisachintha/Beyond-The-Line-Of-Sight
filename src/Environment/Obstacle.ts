@@ -1,6 +1,12 @@
+import { Position } from "../types";
 import { BaseObject } from "./BaseObject";
 
 export class Obstacle extends BaseObject {
+
+    drawLegend(position: Position): void {
+        this.canvas?.drawRectangle(`${this.id}-legend`, position.x, position.y, 10, 10, "white", "white", this.strokeWidth);
+        this.canvas?.drawText(`${this.id}-legend`, position.x + 10, position.y + 5, "Obstacle", "white", 1);
+    }
 
     public width: number;
     public height: number;

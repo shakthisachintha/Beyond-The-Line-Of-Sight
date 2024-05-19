@@ -1,4 +1,5 @@
 import { Canvas } from "../Graphics/Graphics";
+import { Position } from "../types";
 
 export abstract class BaseObject {
     protected id: string = `base-object-${Math.random().toString(36).substring(2, 9)}`;
@@ -13,6 +14,12 @@ export abstract class BaseObject {
         this.x = x;
         this.y = y;
     }
+
+    getFillColor(): string {
+        return this.fillColor;
+    }
+
+    abstract drawLegend(position: Position): void 
 
     setFillColor(color: string) {
         this.fillColor = color;
