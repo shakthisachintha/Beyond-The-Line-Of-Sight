@@ -3,12 +3,18 @@ interface GlobalConfigs {
     showUwbDistanceLines: boolean;
     showUwbDistanceCircles: boolean;
     showObstacleDetectionLines: boolean;
+    mapScale: number;
+    humanTravelMapName: string;
+    robotTravelMapName: string;
 }
 
 type configKeys = 'showDebugLabels' |
     'showUwbDistanceLines' |
     'showUwbDistanceCircles' |
-    'showObstacleDetectionLines'
+    'showObstacleDetectionLines' | 
+    'mapScale' |
+    'humanTravelMapName' |
+    'robotTravelMapName';
 
 class GlobalConfigsProvider {
 
@@ -18,7 +24,10 @@ class GlobalConfigsProvider {
         showDebugLabels: false,
         showUwbDistanceLines: false,
         showUwbDistanceCircles: false,
-        showObstacleDetectionLines: false
+        showObstacleDetectionLines: false,
+        humanTravelMapName: 'human_travel_map',
+        robotTravelMapName: 'robot_travel_map',
+        mapScale: 1
     };
 
     public static getInstance(): GlobalConfigsProvider {
@@ -30,11 +39,11 @@ class GlobalConfigsProvider {
 
     private constructor() { }
 
-    public setConfig(config: configKeys, value: boolean): void {
-        this.configs[config] = value;
+    public setConfig(config: configKeys, value: any): void {
+        this.configs[config] = value as never;
     }
 
-    public getConfig(config: configKeys): boolean {
+    public getConfig(config: configKeys): any {
         return this.configs[config];
     }
 }

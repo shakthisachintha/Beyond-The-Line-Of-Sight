@@ -1,7 +1,7 @@
 import { globalConfigsProvider } from "../configs";
-import { BaseObject } from "../Environment/BaseObject";
+import { BaseObject } from "../environment/base_object";
 import { DrawingColor, Position, TagBearing } from "../types";
-import { UwbAnchor } from "./Anchor";
+import { UwbAnchor } from "./anchor";
 
 export class UwbTag extends BaseObject {
 

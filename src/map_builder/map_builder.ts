@@ -1,4 +1,4 @@
-import { Canvas, MapCanvasImpl } from "../Graphics/Graphics";
+import { Canvas, MapCanvasImpl } from "../graphics/graphics";
 import { DrawingColor, Position } from "../types";
 import { humanizeString } from "../utils";
 
@@ -87,5 +87,7 @@ export const getMapBuilder = (mapName: string, color: string) => {
     return {
         addPosition: (position: Position) => mapBuilder.addPosition(mapName, position),
         getMap: () => mapBuilder.getMap(mapName),
+        // @ts-ignore
+        getCurrentPosition: () => mapBuilder.getMap(mapName)?.positions[mapBuilder.getMap(mapName)?.positions.length - 1]
     }
 }

@@ -1,7 +1,7 @@
-import { Canvas } from "../Graphics/Graphics";
-import { BaseObject } from "./BaseObject";
-import { Obstacle } from "./Obstacle";
-import { checkTwoLinesIntersects, getRectangleLines, getDistanceToLine, humanizeString } from "../utils";
+import { Canvas } from "../graphics/graphics";
+import { BaseObject } from "./base_object";
+import { Obstacle } from "./obstacle";
+import { checkTwoLinesIntersects, getRectangleLines, getDistanceToLine } from "../utils";
 import { globalConfigsProvider } from "../configs";
 import { Position, SurrondingDistances } from "../types";
 
@@ -105,5 +105,44 @@ export class Environment {
         }
 
         return distances;
+    }
+
+    getEnvMatrixRepresentation(): number[][] {
+        const matrix = new Array(100).fill(0).map(() => new Array(100).fill(0));
+        this.objects.forEach(obj => {
+            if (obj instanceof Obstacle) {
+                for (let i = obj.x; i < obj.x + obj.width; i++) {
+                    for (let j = obj.y; j < obj.y + obj.height; j++) {
+                        matrix[j][i] = 1;
+                    }
+                }
+            }
+        });
+        // need to add boundary to the matrix
+        for (let i = 0; i < 100; i++) {
+            matrix[0][i] = 1;
+            matrix[99][i] = 1;
+            matrix[i][0] = 1;
+            matrix[i][99] = 1;
+        }
+
+        // need to inflate the obstacles to make sure the robot can navigate around them
+        const k = 1;
+        const inflatedMatrix = matrix.map(row => row.map(cell => cell));
+        for (let i = 0; i < 100; i++) {
+            for (let j = 0; j < 100; j++) {
+                if (matrix[j][i] === 1) {
+                    for (let x = i - k; x <= i + k; x++) {
+                        for (let y = j - k; y <= j + k; y++) {
+                            if (x >= 0 && y >= 0 && x < 100 && y < 100) {
+                                inflatedMatrix[y][x] = 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return inflatedMatrix;
     }
 }

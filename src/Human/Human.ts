@@ -1,5 +1,5 @@
-import { Environment } from "../Environment/Environment";
-import { MovableObject } from "../Environment/MovableObject";
+import { Environment } from "../environment/environment";
+import { MovableObject } from "../environment/movable_object";
 import { Position } from "../types";
 
 export class Human extends MovableObject {

@@ -1,4 +1,4 @@
-import { Canvas } from "../Graphics/Graphics";
+import { Canvas } from "../graphics/graphics";
 import { Position } from "../types";
 
 export abstract class BaseObject {

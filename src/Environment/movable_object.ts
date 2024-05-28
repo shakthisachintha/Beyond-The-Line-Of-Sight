@@ -1,7 +1,7 @@
-import { Direction, Position, SurrondingDistances } from "../types";
-import { UwbTag } from "../UWB/Tag";
-import { BaseObject } from "./BaseObject";
-import { Environment } from "./Environment";
+import { Direction, Position, SurrondingDistances, TagBearing } from "../types";
+import { UwbTag } from "../uwb/tag";
+import { BaseObject } from "./base_object";
+import { Environment } from "./environment";
 
 export abstract class MovableObject extends BaseObject {
     protected radius: number = 1;
@@ -9,6 +9,7 @@ export abstract class MovableObject extends BaseObject {
     protected direction: number = 0;
     protected env: Environment;
     protected uwbTag: UwbTag | null = null;
+    protected scanRadius: number = 2.5;
 
     constructor(x: number, y: number, env: Environment) {
         super(x, y);
@@ -20,6 +21,10 @@ export abstract class MovableObject extends BaseObject {
         this.uwbTag.setPosition(this.x, this.y);
     }
 
+    getUwbBearing(): TagBearing[] {
+        return this.uwbTag?.getBearing() || [];
+    }
+
     positionMove(target: Position): void {
         this.x = target.x;
         this.y = target.y;
@@ -28,7 +33,7 @@ export abstract class MovableObject extends BaseObject {
     }
 
     move(direction: Direction, displacement?: number): void {
-        const scanResult = this.scan(this.radius * 2.5);  // Scan for obstacles ahead
+        const scanResult = this.scan(this.scanRadius);  // Scan for obstacles ahead
         const distance = displacement || this.travelDistance;
         // Calculate target position based on direction and distance
         let targetX = this.x;

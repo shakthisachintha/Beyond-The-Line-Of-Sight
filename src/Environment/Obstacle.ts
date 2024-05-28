@@ -1,5 +1,5 @@
 import { Position } from "../types";
-import { BaseObject } from "./BaseObject";
+import { BaseObject } from "./base_object";
 
 export class Obstacle extends BaseObject {
 

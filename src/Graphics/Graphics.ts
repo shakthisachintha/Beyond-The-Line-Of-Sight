@@ -25,6 +25,8 @@ export interface Canvas {
     drawCircle(id: string, x: number, y: number, radius: number, fillColor: string, strokeColor: string, strokeWidth: number): void;
     drawLine(id: string, x1: number, y1: number, x2: number, y2: number, strokeColor: string, strokeWidth: number): void;
     drawContiguousLine(id: string, points: Position[], strokeColor: string, strokeWidth: number): void;
+    drawEnvGrid(width: number, height: number, cellSize?: number): void;
+    removeEnvGrid(): void;
     clearLines(): void;
     removeObject(id: string): void;
     setScale(scale: number): void;
@@ -52,6 +54,17 @@ class GraphicsAdapter implements Canvas {
         this.stage = new Konva.Stage({
             container: containerId,
         });
+    }
+
+    private convertToCanvasPosition(position: Position): Position {
+        // position are given like (0,0) to (100,100) where 100 is the max width and height
+        // we assume 0,0 is at the bottom left corner but the canvas has 0,0 at the top left corner
+        // so we need to convert the position to the canvas position
+        return { x: position.x, y: 100 - position.y };
+    }
+
+    private convertToEnvPosition(position: Position): Position {
+        return { x: position.x, y: 100 - position.y };
     }
 
     enableDebugMode(): void {
@@ -139,6 +152,23 @@ class GraphicsAdapter implements Canvas {
         this.stage.setAttr("height", height * this.scale);
         this.layer.add(background);
         this.stage.add(this.layer);
+    }
+
+    drawEnvGrid(width: number, height: number, cellSize: number = 1) {
+
+        for (let i = 0; i < width; i += cellSize) {
+            this.drawLine(`grid-line-x-${i}`, i, 0, i, height, 'black', 1);
+        }
+
+        for (let i = 0; i < height; i += cellSize) {
+            this.drawLine(`grid-line-y-${i}`, 0, i, width, i, 'black', 1);
+        }
+    }
+
+    removeEnvGrid() {
+        this.objects.filter(obj => obj.id.includes("grid-line")).forEach(obj => {
+            obj.shape.destroy();
+        });
     }
 
     drawRectangle(id: string, x: number, y: number, width: number, height: number, fillColor: string, strokeColor: string, strokeWidth: number) {

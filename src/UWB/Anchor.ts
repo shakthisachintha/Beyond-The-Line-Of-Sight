@@ -1,4 +1,4 @@
-import { BaseObject } from "../Environment/BaseObject";
+import { BaseObject } from "../environment/base_object";
 import { Position } from "../types";
 
 export class UwbAnchor extends BaseObject {
