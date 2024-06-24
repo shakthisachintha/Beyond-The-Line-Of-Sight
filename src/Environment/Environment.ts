@@ -4,6 +4,7 @@ import { Obstacle } from "./obstacle";
 import { checkTwoLinesIntersects, getRectangleLines, getDistanceToLine } from "../utils";
 import { globalConfigsProvider } from "../configs";
 import { Position, SurrondingDistances } from "../types";
+import { MovableObject } from "./movable_object";
 
 export class Environment {
     private id: string = `env-${Math.random().toString(36).substring(2, 9)}`;
@@ -127,7 +128,7 @@ export class Environment {
         }
 
         // need to inflate the obstacles to make sure the robot can navigate around them
-        const k = 1;
+        const k = 4;
         const inflatedMatrix = matrix.map(row => row.map(cell => cell));
         for (let i = 0; i < 100; i++) {
             for (let j = 0; j < 100; j++) {
@@ -142,6 +143,20 @@ export class Environment {
                 }
             }
         }
+
+        // need to clear the areas where robot and human subjects are
+        // take a 3x3 square around the robot and human subjects
+        const subjects = this.objects.filter(obj => obj instanceof MovableObject) as MovableObject[];
+        const h = 3
+        subjects.forEach(subject => {
+            for (let i = subject.x - h; i <= subject.x + h; i++) {
+                for (let j = subject.y - h; j <= subject.y + h; j++) {
+                    if (i >= 0 && j >= 0 && i < 100 && j < 100) {
+                        inflatedMatrix[j][i] = 0;
+                    }
+                }
+            }
+        });
 
         return inflatedMatrix;
     }

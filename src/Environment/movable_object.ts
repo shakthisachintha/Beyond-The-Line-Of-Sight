@@ -1,4 +1,5 @@
 import { Direction, Position, SurrondingDistances, TagBearing } from "../types";
+import { getPositionFromUwbBearing } from "../utils";
 import { UwbTag } from "../uwb/tag";
 import { BaseObject } from "./base_object";
 import { Environment } from "./environment";
@@ -86,5 +87,24 @@ export abstract class MovableObject extends BaseObject {
 
     protected scan(radius: number): SurrondingDistances {
         return this.env.getSurrounding(radius, { x: this.x, y: this.y });
+    }
+
+    getAveragedUwbBearing(): Position {
+        const positions = []
+        for (let i = 0; i < 10; i++) {
+            const pos = getPositionFromUwbBearing(this.getUwbBearing());
+            positions.push(pos);
+        }
+
+        // get the average position
+        let robotPosition = { x: 0, y: 0 };
+        positions.forEach(pos => {
+            robotPosition.x += pos.x;
+            robotPosition.y += pos.y;
+        });
+        robotPosition.x /= positions.length;
+        robotPosition.y /= positions.length;
+
+        return robotPosition;
     }
 }

@@ -46,7 +46,7 @@ export class AstarPathPlanner {
             return neighbors;
         };
 
-   
+
 
         const reconstructPath = (endNode: PathNode): Position[] => {
             const path: Position[] = [];

@@ -107,3 +107,22 @@ export function getPositionFromUwbBearing(readings: TagBearing[]): Position {
 export function convertPositionToInt(pos: Position): Position {
     return { x: Math.ceil(pos.x), y: Math.ceil(pos.y) };
 }
+
+export function getAveragedUwbBearing(tagReader: () => TagBearing[]): Position {
+    const positions = []
+    for (let i = 0; i < 10; i++) {
+        const pos = getPositionFromUwbBearing(tagReader());
+        positions.push(pos);
+    }
+
+    // get the average position
+    let robotPosition = { x: 0, y: 0 };
+    positions.forEach(pos => {
+        robotPosition.x += pos.x;
+        robotPosition.y += pos.y;
+    });
+    robotPosition.x /= positions.length;
+    robotPosition.y /= positions.length;
+
+    return robotPosition;
+}

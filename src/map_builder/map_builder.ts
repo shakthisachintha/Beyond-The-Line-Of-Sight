@@ -2,7 +2,7 @@ import { Canvas, MapCanvasImpl } from "../graphics/graphics";
 import { DrawingColor, Position } from "../types";
 import { humanizeString } from "../utils";
 
-interface MapEntry {
+export interface MapEntry {
     color: DrawingColor
     positions: Position[];
 }
@@ -82,12 +82,25 @@ class MapBuider {
 
 const mapBuilder = new MapBuider();
 
-export const getMapBuilder = (mapName: string, color: string) => {
-    mapBuilder.registerMap(mapName, color as DrawingColor);
+export const getMapBuilder = (mapName: string, color: DrawingColor = DrawingColor.BLUE) => {
+    if (!mapBuilder.getMap(mapName))
+        mapBuilder.registerMap(mapName, color as DrawingColor);
     return {
         addPosition: (position: Position) => mapBuilder.addPosition(mapName, position),
         getMap: () => mapBuilder.getMap(mapName),
         // @ts-ignore
-        getCurrentPosition: () => mapBuilder.getMap(mapName)?.positions[mapBuilder.getMap(mapName)?.positions.length - 1]
+        getCurrentPosition: () => {
+            const map = mapBuilder.getMap(mapName);
+            // get last 3 points and average them
+            const positions = map?.positions.slice(-3);
+
+            if (positions && positions.length === 3) {
+                const x = positions.reduce((acc, pos) => acc + pos.x, 0) / 3;
+                const y = positions.reduce((acc, pos) => acc + pos.y, 0) / 3;
+                return { x, y };
+            } else {
+                return { x: 0, y: 0 };
+            }
+        }
     }
 }

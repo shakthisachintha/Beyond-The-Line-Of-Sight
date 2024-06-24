@@ -6,10 +6,10 @@ import { UwbAnchor } from '../uwb/anchor';
 import { UwbTag } from '../uwb/tag';
 import { globalConfigsProvider } from '../configs';
 import { Human } from '../human/human';
-import { DrawingColor, Position, TagBearing } from '../types';
+import { DrawingColor } from '../types';
 import { getMapBuilder } from '../map_builder/map_builder';
-import { AstarPathPlanner } from '../robot/astar';
-import { convertPositionToInt, getPositionFromUwbBearing } from '../utils';
+import { getPositionFromUwbBearing } from '../utils';
+import { RobotController } from '../robot/robot_controller';
 
 // create a randpom environment with obstacles
 // the paths should have a width of 20
@@ -35,32 +35,6 @@ const configs = {
     ]
 }
 
-
-
-// function to handle occlusion based on the UWB readings from the robot and human
-// function handleOcclusion() {
-//     const startPositon = convertPositionToInt((getPositionFromUwbBearing(uwbTagRobot.getBearing())));
-//     const endPosition = convertPositionToInt((getPositionFromUwbBearing(uwbTagHuman.getBearing())));
-//     const path = AstarPathPlanner.findPath(startPositon, endPosition, env.getEnvMatrixRepresentation());
-//     CanvasImpl.removeObject("path");
-//     path.forEach((pos) => {
-//         CanvasImpl.drawRectangle("path", pos.x, pos.y, 1, 1, "red", "red", 1);
-//     });
-// }
-
-// function followHuman(humanMap: Position[], robot: Robot) {
-//     // calcuate a moving average of the last 5 positions
-//     const movingAverage = 5;
-//     humanMap = humanMap.slice(0, humanMap.length - 2);
-//     if (humanMap.length < movingAverage) return;
-//     const lastPositions = humanMap.slice(-movingAverage);
-//     const averageX = lastPositions.reduce((acc, pos) => acc + pos.x, 0) / movingAverage;
-//     const averageY = lastPositions.reduce((acc, pos) => acc + pos.y, 0) / movingAverage;
-//     const robotPosition = getPositionFromUwbBearing(uwbTagRobot.getBearing());
-//     const dx = averageX - robotPosition.x;
-//     const dy = averageY - robotPosition.y;
-//     robot.positionMove({ x: robotPosition.x + dx, y: robotPosition.y + dy });
-// }
 
 function createEnvironment(configs: any, canvas: Canvas) {
     // should normalize the configs
@@ -117,5 +91,21 @@ export function createSimulator(canvas: Canvas) {
     env.addObject(uwbTagHuman);
     human.attachUwbTag(uwbTagHuman);
 
-    return { env, robot, human, uwbTagRobot, uwbTagHuman };
+    const robotController = new RobotController(robot, canvas);
+
+    // Create a map builder for the human
+    const humanTravelMap = getMapBuilder(globalConfigsProvider.getConfig("humanTravelMapName"), DrawingColor.BLUE);
+    setInterval(() => {
+        const position = getPositionFromUwbBearing(uwbTagHuman.getBearing());
+        humanTravelMap.addPosition(position);
+    }, 100);
+
+    // Create a map builder for the robot
+    const robotTravelMap = getMapBuilder(globalConfigsProvider.getConfig("robotTravelMapName"), DrawingColor.RED);
+    setInterval(() => {
+        const position = getPositionFromUwbBearing(uwbTagRobot.getBearing());
+        robotTravelMap.addPosition(position);
+    }, 100);
+
+    return { env, robotController, human, uwbTagRobot, humanTravelMap };
 }

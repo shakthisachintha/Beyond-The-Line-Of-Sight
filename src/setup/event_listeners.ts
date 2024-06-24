@@ -1,7 +1,5 @@
 import { globalConfigsProvider } from "../configs";
 import { CanvasImpl } from "../graphics/graphics";
-import { Human } from "../human/human";
-import { Robot } from "../robot/robot";
 
 export function unregisterEventListners() {
     document.removeEventListener('keydown', () => { });
@@ -15,42 +13,26 @@ export function unregisterEventListners() {
 
 }
 
-export function registerEventListners(human: Human, robot: Robot) {
+interface EventBindings {
+    keyBindings: { [key: string]: () => void; }
+    clicks: { [key: string]: () => void; }
+}
+
+export function registerEventListners({ keyBindings, clicks }: EventBindings) {
     // move the robot around with the arrow keys
     document.addEventListener('keydown', (event) => {
-        switch (event.key) {
-            case "ArrowUp":
-                human.move("up");
-                break;
-            case "ArrowDown":
-                human.move("down");
-                break;
-            case "ArrowLeft":
-                human.move("left");
-                break;
-            case "ArrowRight":
-                human.move("right");
-                break;
+        if (event.key in keyBindings) {
+            keyBindings[event.key]();
         }
     });
 
-    // move robot with wasd
-    document.addEventListener('keydown', (event) => {
-        switch (event.key) {
-            case "w":
-                robot.move("up");
-                break;
-            case "s":
-                robot.move("down");
-                break;
-            case "a":
-                robot.move("left");
-                break;
-            case "d":
-                robot.move("right");
-                break;
-        }
-    });
+    for (const key in clicks) {
+        document.getElementById(key)?.addEventListener('click', () => {
+            clicks[key]();
+        });
+    }
+
+
 
     const tempObsId = "temp-obstacle-1"
     document.getElementById("addObs")?.addEventListener('click', () => {
@@ -67,10 +49,6 @@ export function registerEventListners(human: Human, robot: Robot) {
 
     document.getElementById("removeObs")?.addEventListener('click', () => {
         // env.removeObject(tempObsId);
-    });
-
-    document.getElementById("resolveOcclusion")?.addEventListener('click', (event) => {
-        // handleOcclusion();
     });
 
     document.getElementById("enableObstacleLines")?.addEventListener('change', (event) => {
