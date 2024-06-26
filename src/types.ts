@@ -1,4 +1,4 @@
-export interface SurrondingDistances {
+export interface SurroundingDistances {
     up: number;
     down: number;
     left: number;

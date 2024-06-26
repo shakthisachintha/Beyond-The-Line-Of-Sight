@@ -1,4 +1,4 @@
-import { Canvas, MapCanvasImpl } from "../graphics/graphics";
+import { Canvas, UWBMapCanvasImpl } from "../graphics/graphics";
 import { DrawingColor, Position } from "../types";
 import { humanizeString } from "../utils";
 
@@ -7,12 +7,12 @@ export interface MapEntry {
     positions: Position[];
 }
 
-class MapBuider {
+class MapBuilder {
     private map: Map<string, MapEntry> = new Map<string, MapEntry>();
     private canvas: Canvas;
 
     constructor() {
-        this.canvas = MapCanvasImpl;
+        this.canvas = UWBMapCanvasImpl;
         this.init();
     }
 
@@ -80,7 +80,7 @@ class MapBuider {
 
 }
 
-const mapBuilder = new MapBuider();
+const mapBuilder = new MapBuilder();
 
 export const getMapBuilder = (mapName: string, color: DrawingColor = DrawingColor.BLUE) => {
     if (!mapBuilder.getMap(mapName))

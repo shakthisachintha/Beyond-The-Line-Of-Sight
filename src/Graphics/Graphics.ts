@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { Position } from "../types";
 
-interface BacdropConfig {
+interface BackdropConfig {
     width: number;
     height: number;
     fillColor?: string;
@@ -16,15 +16,16 @@ interface DebugModeOptions {
 }
 
 export interface Canvas {
-    drawBackdrop(config: BacdropConfig): void;
+    drawBackdrop(config: BackdropConfig): void;
     drawRectangle(id: string, x: number, y: number, width: number, height: number, fillColor: string, strokeColor: string, strokeWidth: number): void;
     drawText(id: string, x: number, y: number, text: string, color: string, size: number): void;
-    moveObejct(id: string, position: Position): void;
+    moveObject(id: string, position: Position): void;
     enableDebugMode(options: DebugModeOptions): void;
     disableDebugMode(): void;
     drawCircle(id: string, x: number, y: number, radius: number, fillColor: string, strokeColor: string, strokeWidth: number): void;
     drawLine(id: string, x1: number, y1: number, x2: number, y2: number, strokeColor: string, strokeWidth: number): void;
     drawContiguousLine(id: string, points: Position[], strokeColor: string, strokeWidth: number): void;
+    drawTriangle(id: string, x: number, y: number, radius: number, fillColor: string, strokeColor: string, strokeWidth: number): void;
     drawEnvGrid(width: number, height: number, cellSize?: number): void;
     removeEnvGrid(): void;
     clearLines(): void;
@@ -54,17 +55,6 @@ class GraphicsAdapter implements Canvas {
         this.stage = new Konva.Stage({
             container: containerId,
         });
-    }
-
-    private convertToCanvasPosition(position: Position): Position {
-        // position are given like (0,0) to (100,100) where 100 is the max width and height
-        // we assume 0,0 is at the bottom left corner but the canvas has 0,0 at the top left corner
-        // so we need to convert the position to the canvas position
-        return { x: position.x, y: 100 - position.y };
-    }
-
-    private convertToEnvPosition(position: Position): Position {
-        return { x: position.x, y: 100 - position.y };
     }
 
     enableDebugMode(): void {
@@ -138,7 +128,7 @@ class GraphicsAdapter implements Canvas {
         this.objects = this.objects.filter(obj => obj.id !== id);
     }
 
-    drawBackdrop({ width, height, fillColor = 'white', strokeColor = 'black', strokeWidth = 4 }: BacdropConfig) {
+    drawBackdrop({ width, height, fillColor = 'white', strokeColor = 'black', strokeWidth = 4 }: BackdropConfig) {
         const background = new Konva.Rect({
             x: 0,
             y: 0,
@@ -169,6 +159,21 @@ class GraphicsAdapter implements Canvas {
         this.objects.filter(obj => obj.id.includes("grid-line")).forEach(obj => {
             obj.shape.destroy();
         });
+    }
+
+    // this triangle is not a equilateral triangle it is bi equilateral triangle pointed at right
+    drawTriangle(id: string, x: number, y: number, radius: number, fillColor: string, strokeColor: string, strokeWidth: number): void {
+        const triangle = new Konva.RegularPolygon({
+            x: x * this.scale,
+            y: y * this.scale,
+            sides: 4,
+            radius: radius * this.scale,
+            fill: fillColor,
+            stroke: strokeColor,
+            strokeWidth
+        });
+        this.layer.add(triangle);
+        this.objects.push({ id, shape: triangle });
     }
 
     drawRectangle(id: string, x: number, y: number, width: number, height: number, fillColor: string, strokeColor: string, strokeWidth: number) {
@@ -218,7 +223,7 @@ class GraphicsAdapter implements Canvas {
         this.objects.push({ id, shape: rect });
     }
 
-    moveObejct(id: string, position: Position) {
+    moveObject(id: string, position: Position) {
         const object = this.objects.find(obj => obj.id === id);
         if (object) {
             // move all text and the object
@@ -286,4 +291,5 @@ class GraphicsAdapter implements Canvas {
 }
 
 export const CanvasImpl: Canvas = new GraphicsAdapter("simulation-container");
-export const MapCanvasImpl: Canvas = new GraphicsAdapter("map-container");
+export const UWBMapCanvasImpl: Canvas = new GraphicsAdapter("uwb-map-container");
+export const ExploredMapCanvasImpl: Canvas = new GraphicsAdapter("explored-map-container");

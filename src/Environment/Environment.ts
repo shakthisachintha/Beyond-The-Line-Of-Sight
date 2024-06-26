@@ -3,7 +3,7 @@ import { BaseObject } from "./base_object";
 import { Obstacle } from "./obstacle";
 import { checkTwoLinesIntersects, getRectangleLines, getDistanceToLine } from "../utils";
 import { globalConfigsProvider } from "../configs";
-import { Position, SurrondingDistances } from "../types";
+import { Position, SurroundingDistances as SurroundingDistances } from "../types";
 import { MovableObject } from "./movable_object";
 
 export class Environment {
@@ -19,9 +19,9 @@ export class Environment {
 
     drawLegend() {
         const typeOfObjects = this.objects.map(obj => obj.constructor.name);
-        const uniqeObjectTypes = Array.from(new Set(typeOfObjects));
+        const uniqueObjectTypes = Array.from(new Set(typeOfObjects));
         const uniqueObjects: BaseObject[] = [];
-        uniqeObjectTypes.forEach(type => {
+        uniqueObjectTypes.forEach(type => {
             const objectsOfType = this.objects.filter(obj => obj.constructor.name === type);
             uniqueObjects.push(objectsOfType[0]);
         });
@@ -41,8 +41,8 @@ export class Environment {
         this.canvas.removeObject(objectId);
     }
 
-    getSurrounding(range: number, start: Position): SurrondingDistances {
-        const distances: SurrondingDistances = { up: 0, down: 0, left: 0, right: 0 };
+    getSurrounding(range: number, start: Position): SurroundingDistances {
+        const distances: SurroundingDistances = { up: 0, down: 0, left: 0, right: 0 };
 
         const obstacles = this.objects.filter(obj => obj instanceof Obstacle) as Obstacle[];
         const obstacleLines = obstacles.map(obstacle => getRectangleLines({ x: obstacle.x, y: obstacle.y }, obstacle.width, obstacle.height)).flat();
@@ -104,7 +104,6 @@ export class Environment {
                 this.canvas.drawLine(`line-${idx}`, line[0].x, line[0].y, line[1].x, line[1].y, 'red', 5);
             });
         }
-
         return distances;
     }
 

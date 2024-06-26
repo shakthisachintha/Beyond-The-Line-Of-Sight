@@ -57,11 +57,13 @@ export function createSimulator(canvas: Canvas) {
 
     // Add robot object to environment
     const robot = new Robot(5, 95, env);
+    robot.setID("robot-A");
     env.addObject(robot);
 
 
     // Add human subject to environment
     const human = new Human(20, 95, env);
+    human.setID("human-A");
     env.addObject(human);
 
 

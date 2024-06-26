@@ -1,7 +1,7 @@
 import { globalConfigsProvider } from "../configs";
 import { CanvasImpl } from "../graphics/graphics";
 
-export function unregisterEventListners() {
+export function unregisterEventListeners() {
     document.removeEventListener('keydown', () => { });
     document.getElementById("addObs")?.removeEventListener('click', () => { });
     document.getElementById("removeObs")?.removeEventListener('click', () => { });
@@ -18,7 +18,7 @@ interface EventBindings {
     clicks: { [key: string]: () => void; }
 }
 
-export function registerEventListners({ keyBindings, clicks }: EventBindings) {
+export function registerEventListeners({ keyBindings, clicks }: EventBindings) {
     // move the robot around with the arrow keys
     document.addEventListener('keydown', (event) => {
         if (event.key in keyBindings) {

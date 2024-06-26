@@ -40,7 +40,7 @@ export class UwbTag extends BaseObject {
     setPosition(x: number, y: number): void {
         this.x = x;
         this.y = y;
-        this.canvas?.moveObejct(this.id, { x, y });
+        this.canvas?.moveObject(this.id, { x, y });
 
         this.clearDebugDrawings();
 

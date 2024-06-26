@@ -17,6 +17,7 @@ export class Human extends MovableObject {
     constructor(x: number, y: number, env: Environment) {
         super(x, y, env);
         this.fillColor = "#FFA0FF";
+        this.id = `human-${Math.random().toString(36).substring(2, 9)}`;
     }
 
     roam(): void {
