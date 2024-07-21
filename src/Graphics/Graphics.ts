@@ -176,7 +176,14 @@ class GraphicsAdapter implements Canvas {
         this.objects.push({ id, shape: triangle });
     }
 
+    private hasObject(id: string): boolean {
+        return this.objects.some(obj => obj.id === id);
+    }
+
     drawRectangle(id: string, x: number, y: number, width: number, height: number, fillColor: string, strokeColor: string, strokeWidth: number) {
+        if (this.hasObject(id)) {
+            return
+        }
         const rect = new Konva.Rect({
             x: x * this.scale,
             y: y * this.scale,

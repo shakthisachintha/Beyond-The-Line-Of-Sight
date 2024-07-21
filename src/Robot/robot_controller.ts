@@ -1,4 +1,4 @@
-import { Canvas } from "../graphics/graphics";
+import { Canvas, ExploredMapCanvasImpl } from "../graphics/graphics";
 import { Direction, Position, SurroundingDistances } from "../types";
 import { convertPositionToInt } from "../utils";
 import { AstarPathPlanner } from "./astar";
@@ -13,11 +13,18 @@ export class RobotController {
     private robot: Robot;
     private canvas?: Canvas;
     private discoveredMap: number[][] = [];
+    private lidarRange = 5;
 
     constructor(robot: Robot, canvas?: Canvas) {
         this.robot = robot;
         this.canvas = canvas;
         this.discoveredMap = Array.from({ length: 100 }, () => Array.from({ length: 100 }, () => 0));
+        // this.init();
+    }
+
+    init() {
+        ExploredMapCanvasImpl.setScale(5);
+        ExploredMapCanvasImpl.drawBackdrop({ width: 100, height: 100, fillColor: "#FFFFFF", strokeColor: 'black' });
     }
 
     handleOcclusionInKnownEnvironment(targetPosition: Position, map: number[][]) {
@@ -45,7 +52,7 @@ export class RobotController {
 
         // Perform initial scan and update map
         for (let i = 0; i < 4; i++) {
-            const lidarReading = this.robot.getLidarReading();
+            const lidarReading = this.robot.getLidarReading(this.lidarRange);
             this.updateDiscoveredMap(this.robot.getAveragedUwbBearing(), lidarReading);
         }
 
@@ -72,7 +79,7 @@ export class RobotController {
             // Move to the frontier and update the map
             for (const pos of path) {
                 this.moveToPosition(pos);
-                const lidarReading = this.robot.getLidarReading();
+                const lidarReading = this.robot.getLidarReading(this.lidarRange);
                 this.updateDiscoveredMap(pos, lidarReading);
             }
 
@@ -157,6 +164,8 @@ export class RobotController {
         const y = Math.floor(position.y);
         this.discoveredMap[x][y] = 1;
 
+        const newPositions: Position[] = [{ x, y }];
+
         // lidar output as this { up: 1, down: 4, left: 3, right: 0 }
         // right 0 means no obstacle detected
         // up 1 means 1 unit distance to obstacle
@@ -166,6 +175,7 @@ export class RobotController {
             for (let i = 1; i <= lidarReading.up; i++) {
                 if (y - i >= 0) {
                     this.discoveredMap[x][y - i] = 1;
+                    newPositions.push({ x, y: y - i });
                 }
             }
         }
@@ -174,6 +184,7 @@ export class RobotController {
             for (let i = 1; i <= lidarReading.down; i++) {
                 if (y + i < 100) {
                     this.discoveredMap[x][y + i] = 1;
+                    newPositions.push({ x, y: y + i });
                 }
             }
         }
@@ -182,6 +193,7 @@ export class RobotController {
             for (let i = 1; i <= lidarReading.left; i++) {
                 if (x - i >= 0) {
                     this.discoveredMap[x - i][y] = 1;
+                    newPositions.push({ x: x - i, y });
                 }
             }
         }
@@ -190,12 +202,23 @@ export class RobotController {
             for (let i = 1; i <= lidarReading.right; i++) {
                 if (x + i < 100) {
                     this.discoveredMap[x + i][y] = 1;
+                    newPositions.push({ x: x + i, y });
                 }
             }
         }
+
+        if (ExploredMapCanvasImpl) {
+            newPositions.forEach(({ x, y }) => {
+                ExploredMapCanvasImpl!.drawRectangle(`discovered-map-${x}-${y}`, x, y, 1, 1, "gray", "gray", 1);
+            });
+        }
     }
+
 
     moveRobot(direction: Direction, distance?: number) {
         this.robot.move(direction, distance || 1);
+        const lidarReading = this.robot.getLidarReading(this.lidarRange);
+        this.updateDiscoveredMap(this.robot.getAveragedUwbBearing(), lidarReading);
+
     }
 }

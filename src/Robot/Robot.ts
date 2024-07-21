@@ -15,23 +15,35 @@ export class Robot extends MovableObject {
         this.stroke = "FF0000"
         this.id = `robot-${Math.random().toString(36).substring(2, 9)}`;
         this.radius = 1.5;
-        this.init();
     }
 
-    getLidarReading(): SurroundingDistances {
+    getLidarReading(range: number): SurroundingDistances {
         // Get lidar reading
         const env = this.env;
-        const surrounding = env.getSurrounding(10, { x: this.x, y: this.y });
+        let surrounding = env.getSurrounding(range, { x: this.x, y: this.y });
+        // if any of the surrounding is zero it means a free space available longer than the range
+        // so set the value to the range
+        surrounding = {
+            down: surrounding.down === 0 ? range : surrounding.down,
+            up: surrounding.up === 0 ? range : surrounding.up,
+            left: surrounding.left === 0 ? range : surrounding.left,
+            right: surrounding.right === 0 ? range : surrounding.right
+        }
+        surrounding.down = surrounding.down - this.radius;
+        surrounding.up = surrounding.up - this.radius;
+        surrounding.left = surrounding.left - this.radius;
+        surrounding.right = surrounding.right - this.radius;
+        // if any of the surrounding is less than 0, set it to 0
+        surrounding = {
+            down: surrounding.down < 0 ? 0 : surrounding.down,
+            up: surrounding.up < 0 ? 0 : surrounding.up,
+            left: surrounding.left < 0 ? 0 : surrounding.left,
+            right: surrounding.right < 0 ? 0 : surrounding.right
+        }
         return surrounding;
     }
 
     draw(): void {
         this.canvas?.drawTriangle(this.id, this.x, this.y, this.radius, this.fillColor, this.stroke, 2);
-    }
-
-    init = (): void => {
-        setInterval(() => {
-            // this.getLidarReading();
-        }, 1000);
     }
 }

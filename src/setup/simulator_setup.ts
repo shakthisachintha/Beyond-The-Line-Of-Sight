@@ -1,7 +1,7 @@
 import { Robot } from '../robot/robot';
 import { Environment } from '../environment/environment';
 import { Obstacle } from '../environment/obstacle';
-import { Canvas } from '../graphics/graphics';
+import { Canvas, ExploredMapCanvasImpl } from '../graphics/graphics';
 import { UwbAnchor } from '../uwb/anchor';
 import { UwbTag } from '../uwb/tag';
 import { globalConfigsProvider } from '../configs';
@@ -54,6 +54,7 @@ function createEnvironment(configs: any, canvas: Canvas) {
 export function createSimulator(canvas: Canvas) {
 
     const env = createEnvironment(configs, canvas);
+    const env2 = createEnvironment(configs, ExploredMapCanvasImpl)
 
     // Add robot object to environment
     const robot = new Robot(5, 95, env);
@@ -100,14 +101,14 @@ export function createSimulator(canvas: Canvas) {
     setInterval(() => {
         const position = getPositionFromUwbBearing(uwbTagHuman.getBearing());
         humanTravelMap.addPosition(position);
-    }, 100);
+    }, 80);
 
     // Create a map builder for the robot
     const robotTravelMap = getMapBuilder(globalConfigsProvider.getConfig("robotTravelMapName"), DrawingColor.RED);
     setInterval(() => {
         const position = getPositionFromUwbBearing(uwbTagRobot.getBearing());
         robotTravelMap.addPosition(position);
-    }, 100);
+    }, 80);
 
     return { env, robotController, human, uwbTagRobot, humanTravelMap };
 }
