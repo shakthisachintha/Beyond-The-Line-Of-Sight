@@ -30,6 +30,7 @@ export interface Canvas {
     removeEnvGrid(): void;
     clearLines(): void;
     removeObject(id: string): void;
+    removeSimilarObjects(likeId: string): void
     setScale(scale: number): void;
 }
 
@@ -55,6 +56,12 @@ class GraphicsAdapter implements Canvas {
         this.stage = new Konva.Stage({
             container: containerId,
         });
+    }
+    removeSimilarObjects(likeId: string): void {
+        this.objects.filter(obj => obj.id.includes(likeId)).forEach(obj => {
+            obj.shape.destroy();
+        });
+        this.objects = this.objects.filter(obj => !obj.id.includes(likeId));
     }
 
     enableDebugMode(): void {

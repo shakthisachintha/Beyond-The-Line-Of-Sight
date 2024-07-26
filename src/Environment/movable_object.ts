@@ -9,9 +9,10 @@ export abstract class MovableObject extends BaseObject {
     protected radius: number = 1;
     protected travelDistance: number = 1;
     protected direction: number = 0;
-    protected env: Environment;
+    public env: Environment;
     protected uwbTag: UwbTag | null = null;
     protected scanRadius: number = 2.5;
+    protected speed: number = 1;
     private dddGraphicsAdapter: I3DDGraphicsAdapter;
     
     constructor(x: number, y: number, env: Environment) {
@@ -29,11 +30,28 @@ export abstract class MovableObject extends BaseObject {
         return this.uwbTag?.getBearing() || [];
     }
 
-    positionMove(target: Position): void {
-        this.x = target.x;
-        this.y = target.y;
-        this.uwbTag?.setPosition(this.x, this.y);
-        this.canvas?.moveObject(this.id, { x: this.x, y: this.y });
+    canMove(direction: Direction, displacement?: number): boolean {
+        const scanResult = this.scan(this.scanRadius);
+        const distance = displacement || this.travelDistance;
+        let targetX = this.x;
+        let targetY = this.y;
+        switch (direction) {
+            case "up":
+                targetY -= distance;
+                break;
+            case "down":
+                targetY += distance;
+                break;
+            case "left":
+                targetX -= distance;
+                break;
+            case "right":
+                targetX += distance;
+                break;
+        }
+
+        const obstacleAhead = this.checkObstacleAhead(scanResult, direction);
+        return !obstacleAhead;
     }
 
     move(direction: Direction, displacement?: number): void {
@@ -66,6 +84,7 @@ export abstract class MovableObject extends BaseObject {
             this.y = targetY;
             this.uwbTag?.setPosition(this.x, this.y);
             this.canvas?.moveObject(this.id, { x: this.x, y: this.y });
+            
         } else {
             // Obstacle detected - handling logic here
             console.log('Obstacle detected! Movement blocked.');
@@ -88,7 +107,8 @@ export abstract class MovableObject extends BaseObject {
     }
 
     protected scan(radius: number): SurroundingDistances {
-        return this.env.getSurrounding(radius, { x: this.x, y: this.y });
+        const surrounding = this.env.getSurrounding(radius, { x: this.x, y: this.y });
+        return surrounding;
     }
 
     getAveragedUwbBearing(): Position {
@@ -110,6 +130,7 @@ export abstract class MovableObject extends BaseObject {
         robotPosition.x = Math.floor(robotPosition.x);
         robotPosition.y = Math.floor(robotPosition.y);
 
-        return robotPosition;
+        return {x: this.x, y: this.y};
+        // return robotPosition;
     }
 }

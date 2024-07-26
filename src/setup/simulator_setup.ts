@@ -14,7 +14,7 @@ import { RobotController } from '../robot/robot_controller';
 // create a randpom environment with obstacles
 // the paths should have a width of 20
 const configs = {
-    scale: 6,
+    scale: 5,
     env: {
         width: 100,
         height: 100

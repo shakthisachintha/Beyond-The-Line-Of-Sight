@@ -20,8 +20,8 @@ const events = {
         "d": () => robotController.moveRobot("right"),
     },
     clicks: {
-        "resolveOcclusion": () => robotController.handleOcclusionInKnownEnvironment(humanTravelMap.getCurrentPosition()!, env.getEnvMatrixRepresentation()),
-        // "resolveOcclusion": () => robotController.handleOcclusionInUnknownEnvironment(humanTravelMap.getCurrentPosition()!),
+        // "resolveOcclusion": () => robotController.handleOcclusionInKnownEnvironment(humanTravelMap.getCurrentPosition()!, env.getEnvMatrixRepresentation()),
+        "resolveOcclusion": () => robotController.handleOcclusionInUnknownEnvironment(humanTravelMap.getCurrentPosition()!),
         // "resolveOcclusion": () => console.log("resolve occlusion"),
     }
 }

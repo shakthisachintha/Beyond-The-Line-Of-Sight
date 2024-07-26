@@ -11,6 +11,7 @@ export class Environment {
     private backgroundColor: string = "#FFFFF1";
     private objects: BaseObject[] = [];
     private canvas: Canvas;
+    private inflateFactor: number = 2;
 
     constructor(width: number, height: number, canvas: Canvas) {
         this.canvas = canvas;
@@ -34,6 +35,11 @@ export class Environment {
         this.objects.push(object);
         object.setCanvas(this.canvas);
         object.draw();
+        // draw the inflated obstacles
+        if (object instanceof Obstacle) {
+            const inflatedObstacle = new Obstacle(object.width + this.inflateFactor, object.height + this.inflateFactor, object.x - this.inflateFactor / 2, object.y - this.inflateFactor / 2);
+            this.canvas.drawRectangle(inflatedObstacle.getID(), inflatedObstacle.x, inflatedObstacle.y, inflatedObstacle.width, inflatedObstacle.height, "transparent", "red", 1);
+        }
     }
 
     removeObject(objectId: string) {
@@ -44,7 +50,12 @@ export class Environment {
     getSurrounding(range: number, start: Position): SurroundingDistances {
         const distances: SurroundingDistances = { up: 0, down: 0, left: 0, right: 0 };
 
-        const obstacles = this.objects.filter(obj => obj instanceof Obstacle) as Obstacle[];
+        const x = this.objects.filter(obj => obj instanceof Obstacle) as Obstacle[];
+        // inflate the obstacles to make sure the robot can't pass through them
+        const obstacles = x.map(obstacle => {
+            return new Obstacle(obstacle.width + this.inflateFactor, obstacle.height + this.inflateFactor, obstacle.x - this.inflateFactor / 2, obstacle.y - this.inflateFactor / 2);
+        });
+
         const obstacleLines = obstacles.map(obstacle => getRectangleLines({ x: obstacle.x, y: obstacle.y }, obstacle.width, obstacle.height)).flat();
 
         const linesToConsider = obstacleLines.filter(line => {
@@ -69,6 +80,7 @@ export class Environment {
             }
         })
         const envBoxLines = getRectangleLines({ x: 0, y: 0 }, 100, 100);
+    
         const envBoxLineTop = envBoxLines[0];
         const envBoxLineRight = envBoxLines[1];
         const envBoxLineBottom = envBoxLines[2];
@@ -127,7 +139,7 @@ export class Environment {
         }
 
         // need to inflate the obstacles to make sure the robot can navigate around them
-        const k = 4;
+        const k = 2;
         const inflatedMatrix = matrix.map(row => row.map(cell => cell));
         for (let i = 0; i < 100; i++) {
             for (let j = 0; j < 100; j++) {
