@@ -20,9 +20,8 @@ const events = {
         "d": () => robotController.moveRobot("right"),
     },
     clicks: {
-        // "resolveOcclusion": () => robotController.handleOcclusionInKnownEnvironment(humanTravelMap.getCurrentPosition()!, env.getEnvMatrixRepresentation()),
-        "resolveOcclusion": () => robotController.handleOcclusionInUnknownEnvironment(humanTravelMap.getCurrentPosition()!),
-        // "resolveOcclusion": () => console.log("resolve occlusion"),
+        "resolveOcclusionEnvKnown": () => robotController.handleOcclusionInKnownEnvironment(humanTravelMap.getCurrentPosition()!, env.getEnvMatrixRepresentation()),
+        "resolveOcclusionEnvUnknown": () => robotController.handleOcclusionInUnknownEnvironment(humanTravelMap.getCurrentPosition()!)
     }
 }
 registerEventListeners(events);
@@ -34,12 +33,8 @@ registerEventListeners(events);
 // Can use A* algorithm to find the path
 
 // scenario 2
-// Robot knows the whole entire map of the environment
-// Robot knows the target position
-// Cannot use A* algorithm to find the path
-
-// scenario 3
 // Robot does not know the whole entire map of the environment
 // Robot knows the target position
-// Cannot use A* algorithm to find the path
+// Cannot use A* algorithm to find the path (since it does not know the whole map)
 // Robot have to scan the environment to find the path
+// Robot can use the D*-Lite algorithm to find the path

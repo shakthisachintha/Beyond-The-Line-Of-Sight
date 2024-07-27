@@ -6,7 +6,7 @@ import { UwbAnchor } from "./anchor";
 export class UwbTag extends BaseObject {
 
     private linkedAnchor: UwbAnchor[] = [];
-    private errorPercentage: number = 0;
+    private errorPercentage: number = 0.01;
 
     constructor(x: number, y: number) {
         super(x, y);

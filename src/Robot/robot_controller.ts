@@ -75,10 +75,6 @@ export class RobotController {
 
         while (true) {
             const frontiers = this.identifyFrontiers();
-            // draw frontiers
-            frontiers.forEach(({ x, y }) => {
-                ExploredMapCanvasImpl!.drawRectangle(`frontier-${x}-${y}`, x, y, 1, 1, "green", "green", 1);
-            });
 
             // Filter out frontiers that are close to each other
             const reachableFrontiers = frontiers.filter((frontier) => {
@@ -133,7 +129,6 @@ export class RobotController {
                 });
             }
         }
-
     }
 
 
@@ -145,14 +140,6 @@ export class RobotController {
     private updateDiscoverdMap() {
         const lidarReading = this.robot.getLidarReading(this.lidarRange);
         this.updateDiscoveredMap(this.robot.getAveragedUwbBearing(), lidarReading);
-    }
-
-    private async exploreDirection(direction: Direction, distance: number) {
-        while (this.canMoveToDirectionWithLidar(direction, distance)) {
-            this.moveRobot(direction, distance);
-            this.updateDiscoverdMap();
-            await new Promise(resolve => setTimeout(resolve, 90));
-        }
     }
 
     private identifyFrontiers(): Position[] {
@@ -185,7 +172,8 @@ export class RobotController {
         this.moveRobot(direction, distance);
     }
 
-    async moveAlongPath(path: Position[]) {
+    async moveAlongPath(destination: Position) {
+        const path = AstarPathPlanner.findPath(this.robot.getAveragedUwbBearing(), destination, this.discoveredMap);
         for (let i = 1; i < path.length; i++) {
             const position = path[i];
             const { direction, distance } = this.getDirectionCommandToTravel(position);
@@ -302,7 +290,5 @@ export class RobotController {
 
     moveRobot(direction: Direction, distance?: number) {
         this.robot.move(direction, distance || 1);
-        const lidarReading = this.robot.getLidarReading(this.lidarRange);
-        this.updateDiscoveredMap(this.robot.getAveragedUwbBearing(), lidarReading);
     }
 }

@@ -129,8 +129,7 @@ export abstract class MovableObject extends BaseObject {
 
         robotPosition.x = Math.floor(robotPosition.x);
         robotPosition.y = Math.floor(robotPosition.y);
-
-        return {x: this.x, y: this.y};
-        // return robotPosition;
+        
+        return robotPosition;
     }
 }
