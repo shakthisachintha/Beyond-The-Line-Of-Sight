@@ -14,11 +14,15 @@ export abstract class MovableObject extends BaseObject {
     protected scanRadius: number = 2.5;
     protected speed: number = 1;
     private dddGraphicsAdapter: I3DDGraphicsAdapter;
-    
+
     constructor(x: number, y: number, env: Environment) {
         super(x, y);
         this.env = env;
         this.dddGraphicsAdapter = new DDDGraphicsAdapter();
+    }
+
+    protected getTimeToMove(distance: number): number {
+        return distance / this.speed;
     }
 
     attachUwbTag(tag: UwbTag): void {
@@ -54,41 +58,47 @@ export abstract class MovableObject extends BaseObject {
         return !obstacleAhead;
     }
 
-    move(direction: Direction, displacement?: number): void {
-        const scanResult = this.scan(this.scanRadius);  // Scan for obstacles ahead
-        const distance = displacement || this.travelDistance;
-        // Calculate target position based on direction and distance
-        let targetX = this.x;
-        let targetY = this.y;
-        switch (direction) {
-            case "up":
-                targetY -= distance;
-                break;
-            case "down":
-                targetY += distance;
-                break;
-            case "left":
-                targetX -= distance;
-                break;
-            case "right":
-                targetX += distance;
-                break;
-        }
+    async move(direction: Direction, displacement?: number): Promise<void> {
+        return new Promise<void>(async (resolve) => {
+            const scanResult = this.scan(this.scanRadius);  // Scan for obstacles ahead
+            const distance = displacement || this.travelDistance;
+            // Calculate target position based on direction and distance
+            let targetX = this.x;
+            let targetY = this.y;
+            switch (direction) {
+                case "up":
+                    targetY -= distance;
+                    break;
+                case "down":
+                    targetY += distance;
+                    break;
+                case "left":
+                    targetX -= distance;
+                    break;
+                case "right":
+                    targetX += distance;
+                    break;
+            }
 
-        // Check for obstacles in the path
-        const obstacleAhead = this.checkObstacleAhead(scanResult, direction);
+            // Check for obstacles in the path
+            const obstacleAhead = this.checkObstacleAhead(scanResult, direction);
 
-        if (!obstacleAhead) {
-            // If path is clear, proceed
-            this.x = targetX;
-            this.y = targetY;
-            this.uwbTag?.setPosition(this.x, this.y);
-            this.canvas?.moveObject(this.id, { x: this.x, y: this.y });
-            
-        } else {
-            // Obstacle detected - handling logic here
-            console.log('Obstacle detected! Movement blocked.');
-        }
+            if (!obstacleAhead) {
+                // If path is clear, proceed
+                const distance = Math.sqrt(Math.pow(targetX - this.x, 2) + Math.pow(targetY - this.y, 2));
+                const timeToMove = this.getTimeToMove(distance);
+                this.x = targetX;
+                this.y = targetY;
+                this.uwbTag?.setPosition(this.x, this.y);
+                this.canvas?.moveObject(this.id, { x: this.x, y: this.y });
+                await new Promise((x) => setTimeout(x, timeToMove * 1000));
+                resolve();
+            } else {
+                // Obstacle detected - handling logic here
+                console.log("Obstacle detected");
+                resolve();
+            }
+        })
     }
 
     private checkObstacleAhead(scanResult: SurroundingDistances, direction: string): boolean {
@@ -129,7 +139,7 @@ export abstract class MovableObject extends BaseObject {
 
         robotPosition.x = Math.floor(robotPosition.x);
         robotPosition.y = Math.floor(robotPosition.y);
-        
+
         return robotPosition;
     }
 }

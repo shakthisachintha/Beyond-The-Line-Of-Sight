@@ -6,7 +6,7 @@ import { UwbAnchor } from "./anchor";
 export class UwbTag extends BaseObject {
 
     private linkedAnchor: UwbAnchor[] = [];
-    private errorPercentage: number = 0.01;
+    private errorPercentage: number = globalConfigsProvider.getConfig("uwbTagErrorPercentage");
 
     constructor(x: number, y: number) {
         super(x, y);
@@ -29,7 +29,7 @@ export class UwbTag extends BaseObject {
 
     getBearing(): TagBearing[] {
         return this.linkedAnchor.map(anchor => {
-            // error should be plus or minus 3%
+            // error should be plus or minus error rate%
             const distance = Math.sqrt(Math.pow(anchor.x - this.x, 2) + Math.pow(anchor.y - this.y, 2)) * (1 + (Math.random() * this.errorPercentage));
             return {
                 anchor: anchor.getName(), distance, anchorPosition: { x: anchor.x, y: anchor.y }

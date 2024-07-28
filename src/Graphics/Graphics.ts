@@ -238,12 +238,10 @@ class GraphicsAdapter implements Canvas {
     }
 
     moveObject(id: string, position: Position) {
-        const object = this.objects.find(obj => obj.id === id);
-        if (object) {
-            // move all text and the object
-            object.shape.setAttr("x", position.x * this.scale);
-            object.shape.setAttr("y", position.y * this.scale);
-            this.layer.draw();
+        const object = this.objects.filter(obj => obj.id === id);
+        for (let i=0; i<object.length; i++) {
+            object[i].shape.setAttr("x", position.x * this.scale);
+            object[i].shape.setAttr("y", position.y * this.scale);
         }
     }
 

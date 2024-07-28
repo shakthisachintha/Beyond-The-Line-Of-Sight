@@ -3,6 +3,8 @@ import { createSimulator } from './setup/simulator_setup';
 import { registerEventListeners as registerEventListeners } from './setup/event_listeners';
 import '../main.css';
 import { webSocketClient } from './ws';
+import { globalConfigsProvider } from './configs';
+import { humanizeCamelCase, humanizeString } from './utils';
 
 // Create the simulator environment
 const { human, robotController, env, humanTravelMap } = createSimulator(CanvasImpl);
@@ -24,7 +26,30 @@ const events = {
         "resolveOcclusionEnvUnknown": () => robotController.handleOcclusionInUnknownEnvironment(humanTravelMap.getCurrentPosition()!)
     }
 }
+
+const renderProperties = () => {
+    const propertiesContainer = document.getElementById("simulatorPropertiesContainer");
+    // clear the container
+    propertiesContainer!.innerHTML = "";
+    globalConfigsProvider.getAllConfigs().forEach((value, key) => {
+        const property = document.createElement("div");
+        property.className = "config-property";
+        property.innerHTML = `${humanizeCamelCase(key)}: ${value}`;
+        propertiesContainer?.appendChild(property);
+    })
+}
+
+globalConfigsProvider.addConfigChangeListener("any", (value) => {
+    renderProperties();
+});
+
+globalConfigsProvider.addConfigChangeListener("robotMoveSpeed", (value) => {
+    robotController.changeRobotSpeed(value);
+});
+
 registerEventListeners(events);
+renderProperties();
+
 // webSocketClient.subscribe("simulatorGraphics");
 
 // scenario 1 

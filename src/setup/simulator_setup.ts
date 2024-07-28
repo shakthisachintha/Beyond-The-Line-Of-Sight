@@ -1,7 +1,7 @@
 import { Robot } from '../robot/robot';
 import { Environment } from '../environment/environment';
 import { Obstacle } from '../environment/obstacle';
-import { Canvas, ExploredMapCanvasImpl } from '../graphics/graphics';
+import { Canvas, CanvasImpl, ExploredMapCanvasImpl, UWBMapCanvasImpl } from '../graphics/graphics';
 import { UwbAnchor } from '../uwb/anchor';
 import { UwbTag } from '../uwb/tag';
 import { globalConfigsProvider } from '../configs';
@@ -11,10 +11,10 @@ import { getMapBuilder } from '../map_builder/map_builder';
 import { getPositionFromUwbBearing } from '../utils';
 import { RobotController } from '../robot/robot_controller';
 
-// create a randpom environment with obstacles
+// create a random environment with obstacles
 // the paths should have a width of 20
 const configs = {
-    scale: 5,
+    scale: globalConfigsProvider.getConfig("mapScale"),
     env: {
         width: 100,
         height: 100
@@ -40,9 +40,6 @@ function createEnvironment(configs: any, canvas: Canvas) {
     // should normalize the configs
     // obstacles are created in a scale where 100,100 env.
     // should normalize the obstacles to the environment scale
-    const scale = configs.scale;
-    globalConfigsProvider.setConfig("mapScale", scale);
-    canvas.setScale(scale);
     const env = new Environment(configs.env.width, configs.env.height, canvas);
     configs.obstacles.forEach((config: any) => {
         const obstacle = new Obstacle(config.dims[0], config.dims[1], config.cords[0], config.cords[1]);
@@ -51,10 +48,21 @@ function createEnvironment(configs: any, canvas: Canvas) {
     return env;
 }
 
+function initGraphicCanvases() {
+    UWBMapCanvasImpl.setScale(globalConfigsProvider.getConfig("localizationMapScale"));
+    UWBMapCanvasImpl.drawBackdrop({ width: 100, height: 100, fillColor: "#FFFFF1", strokeColor: 'black' });
+
+    ExploredMapCanvasImpl.setScale(globalConfigsProvider.getConfig("lidarMapScale"));
+    ExploredMapCanvasImpl.drawBackdrop({ width: 100, height: 100, fillColor: "#FFFFFF", strokeColor: 'black' });
+
+    CanvasImpl.setScale(globalConfigsProvider.getConfig("mapScale"));
+}
+
 export function createSimulator(canvas: Canvas) {
 
+    initGraphicCanvases();
+
     const env = createEnvironment(configs, canvas);
-    const env2 = createEnvironment(configs, ExploredMapCanvasImpl)
 
     // Add robot object to environment
     const robot = new Robot(5, 95, env);
@@ -94,21 +102,22 @@ export function createSimulator(canvas: Canvas) {
     env.addObject(uwbTagHuman);
     human.attachUwbTag(uwbTagHuman);
 
-    const robotController = new RobotController(robot, canvas);
 
     // Create a map builder for the human
-    const humanTravelMap = getMapBuilder(globalConfigsProvider.getConfig("humanTravelMapName"), DrawingColor.BLUE);
+    const humanTravelMap = getMapBuilder(globalConfigsProvider.getConfig("humanTravelMapName"), human.getAveragedUwbBearing(), DrawingColor.BLUE);
     setInterval(() => {
         const position = getPositionFromUwbBearing(uwbTagHuman.getBearing());
         humanTravelMap.addPosition(position);
     }, 80);
 
     // Create a map builder for the robot
-    const robotTravelMap = getMapBuilder(globalConfigsProvider.getConfig("robotTravelMapName"), DrawingColor.RED);
+    const robotTravelMap = getMapBuilder(globalConfigsProvider.getConfig("robotTravelMapName"), robot.getAveragedUwbBearing(), DrawingColor.RED);
     setInterval(() => {
         const position = getPositionFromUwbBearing(uwbTagRobot.getBearing());
         robotTravelMap.addPosition(position);
     }, 80);
+
+    const robotController = new RobotController(robot, robotTravelMap, canvas);
 
     return { env, robotController, human, uwbTagRobot, humanTravelMap };
 }

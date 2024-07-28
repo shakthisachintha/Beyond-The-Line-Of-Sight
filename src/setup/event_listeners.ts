@@ -10,7 +10,7 @@ export function unregisterEventListeners() {
     document.getElementById("showDebugLabels")?.removeEventListener('change', () => { });
     document.getElementById("showUwbDistanceCircles")?.removeEventListener('change', () => { });
     document.getElementById("showUwbDistanceLines")?.removeEventListener('change', () => { });
-
+    document.getElementById("robotSpeedRange")?.removeEventListener('change', () => { });
 }
 
 interface EventBindings {
@@ -51,6 +51,12 @@ export function registerEventListeners({ keyBindings, clicks }: EventBindings) {
         // env.removeObject(tempObsId);
     });
 
+    document.getElementById("robotSpeedRange")?.addEventListener('change', (event) => {
+        const range = event.target as HTMLInputElement;
+        const speed = parseInt(range.value);
+        globalConfigsProvider.setConfig('robotMoveSpeed', speed);
+    })
+
     document.getElementById("enableObstacleLines")?.addEventListener('change', (event) => {
         const checkbox = event.target as HTMLInputElement;
         if (checkbox.checked) {
@@ -84,6 +90,15 @@ export function registerEventListeners({ keyBindings, clicks }: EventBindings) {
             globalConfigsProvider.setConfig('showUwbDistanceLines', true);
         } else {
             globalConfigsProvider.setConfig('showUwbDistanceLines', false);
+        }
+    });
+
+    document.getElementById("showAstarPaths")?.addEventListener('change', (event) => {
+        const checkbox = event.target as HTMLInputElement;
+        if (checkbox.checked) {
+            globalConfigsProvider.setConfig('showAstarPath', true);
+        } else {
+            globalConfigsProvider.setConfig('showAstarPath', false);
         }
     });
 }

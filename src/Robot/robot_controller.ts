@@ -1,5 +1,7 @@
+import { globalConfigsProvider } from "../configs";
 import { Canvas, ExploredMapCanvasImpl } from "../graphics/graphics";
-import { Direction, Position, SurroundingDistances } from "../types";
+import { MapBuilderInstance } from "../map_builder/map_builder";
+import { Direction, Position } from "../types";
 import { convertPositionToInt } from "../utils";
 import { AstarPathPlanner } from "./astar";
 import { Robot } from "./robot";
@@ -8,41 +10,74 @@ interface PositionWithDistance extends Position {
     distance: number;
 }
 
+class FrontiersPriorityQueue {
+    // this should be a priority queue
+    // the frontiers should be sorted based on distance
+    // minimum distance should be popped first
+    private frontiers: PositionWithDistance[] = [];
+
+    addFrontier(frontier: PositionWithDistance, endPosition: Position) {
+        frontier.distance = Math.hypot(frontier.x - endPosition.x, frontier.y - endPosition.y);
+        this.frontiers.push(frontier);
+        this.frontiers.sort((a, b) => a.distance - b.distance);
+    }
+
+    popFrontier() {
+        return this.frontiers.shift();
+    }
+
+    isEmpty() {
+        return this.frontiers.length === 0;
+    }
+}
+
 export class RobotController {
 
     private robot: Robot;
     private canvas?: Canvas;
     private discoveredMap: number[][] = [];
     private lidarRange = 5;
+    private robotTravelMap: MapBuilderInstance;
 
-    constructor(robot: Robot, canvas?: Canvas) {
+    constructor(robot: Robot, robotTravelMap: MapBuilderInstance,canvas?: Canvas) {
         this.robot = robot;
         this.canvas = canvas;
+        this.robotTravelMap = robotTravelMap;
         this.discoveredMap = Array.from({ length: 100 }, () => Array.from({ length: 100 }, () => 1));
-        this.init();
     }
 
-    init() {
-        ExploredMapCanvasImpl.setScale(5);
-        // ExploredMapCanvasImpl.drawBackdrop({ width: 100, height: 100, fillColor: "#FFFFFF", strokeColor: 'black' });
+    private async moveAlongPath(path: Position[]) {
+        for (let i = 1; i < path.length; i += 1) {
+            const position = path[i];
+            const { direction, distance } = this.getDirectionCommandToTravel(position);
+            await this.moveRobot(direction, distance);
+        }
     }
 
-    handleOcclusionInKnownEnvironment(targetPosition: Position, map: number[][]) {
-        const startPosition = convertPositionToInt(this.robot.getAveragedUwbBearing());
+    public changeRobotSpeed(speed: number) {
+        this.robot.setSpeed(speed);
+    }
+
+    private getLatestRobotPosition(): Position {
+        const position = this.robotTravelMap.getCurrentPosition()
+        return convertPositionToInt(position);
+    }
+
+    async handleOcclusionInKnownEnvironment(targetPosition: Position, map: number[][]) {
+        const startPosition = convertPositionToInt(this.getLatestRobotPosition());
         const endPosition = convertPositionToInt(targetPosition);
-        const path = AstarPathPlanner.findPath(startPosition, endPosition, map);
 
-        if (this.canvas) {
+        const path = AstarPathPlanner.findPath(startPosition, endPosition, map).slice(0, -5);
+        this.drawAStarPath(path);
+        await this.moveAlongPath(path);
+    }
+
+    private drawAStarPath(path: Position[]) {
+        if (globalConfigsProvider.getConfig("showAstarPath") && this.canvas) {
             this.canvas.removeSimilarObjects("a*path");
             path.slice(0, path.length - 5).forEach((pos, idx) => {
                 this.canvas!.drawRectangle("a*path" + idx, pos.x, pos.y, 0.5, 0.5, "red", "red", 0.5);
             });
-        }
-
-        for (let i = 1; i < path.length - 5; i += 1) {
-            setTimeout(() => {
-                this.moveToPosition(path[i]);
-            }, 70 * i);
         }
     }
 
@@ -50,8 +85,8 @@ export class RobotController {
         const endPosition = convertPositionToInt(targetPosition);
         const frontierDistanceThreshold = 3; // Set a distance threshold for filtering out similar frontiers
 
-        let path = [];
-        path = AstarPathPlanner.findPath(convertPositionToInt(this.robot.getAveragedUwbBearing()), endPosition, this.discoveredMap);
+        let path: Position[] = [];
+        path = AstarPathPlanner.findPath(convertPositionToInt(this.getLatestRobotPosition()), endPosition, this.discoveredMap);
         if (path.length === 0) {
             console.log("No path found");
         } else {
@@ -61,63 +96,60 @@ export class RobotController {
                 path.slice(0, path.length - 5).forEach((pos, idx) => {
                     this.canvas!.drawRectangle("a*path" + idx, pos.x, pos.y, 0.5, 0.5, "red", "red", 0.5);
                 });
+                // move robot along the path
+                for (let i = 1; i < path.length; i += 1) {
+                    const position = path[i];
+                    const { direction, distance } = this.getDirectionCommandToTravel(position);
+                    await this.moveRobot(direction, distance);
+                }
             }
             return;
         }
 
-
-
         // Perform initial scan and update the map
-        for (let i = 0; i < 4; i++) {
-            const lidarReading = this.robot.getLidarReading(this.lidarRange);
-            this.updateDiscoveredMap(this.robot.getAveragedUwbBearing(), lidarReading);
-        }
+        await this.updateDiscoveredMap();
 
-        while (true) {
-            const frontiers = this.identifyFrontiers();
+        const frontierPriorityQueue = new FrontiersPriorityQueue();
 
-            // Filter out frontiers that are close to each other
-            const reachableFrontiers = frontiers.filter((frontier) => {
-                return this.canMoveToPosition(frontier);
-            });
+        const frontiers = this.identifyFrontiers();
 
-            // draw filtered frontiers
-            reachableFrontiers.forEach(({ x, y }) => {
-                ExploredMapCanvasImpl!.drawRectangle(`filtered-frontier-${x}-${y}`, x, y, 1, 1, "blue", "blue", 1);
-            });
+        // Sort the frontiers based on distance
+        frontiers.forEach(frontier => {
+            frontierPriorityQueue.addFrontier({ ...frontier, distance: 0 }, endPosition);
+        });
 
-            if (reachableFrontiers.length === 0) {
-                console.log("No reachable frontiers found");
+        do {
+            const frontier = frontierPriorityQueue.popFrontier();
+
+            if (!frontier) {
                 break;
             }
 
-            // Sort the frontiers based on distance
-            const frontiersWithDistance = reachableFrontiers.map((frontier) => {
-                return { ...frontier, distance: Math.hypot(frontier.x - endPosition.x, frontier.y - endPosition.y) };
-            });
+            if (this.canMoveToPosition(frontier)) {
+                await this.moveToFrontierInDiscoveredMap(frontier);
 
-            frontiersWithDistance.sort((a, b) => a.distance - b.distance);
+                this.updateDiscoveredMap();
 
-            // Move to the closest frontier
-            const closestFrontier = frontiersWithDistance[0];
-            this.moveToPosition(closestFrontier);
-            
-            // Perform scan and update the map
-            for (let i = 0; i < 4; i++) {
-                const lidarReading = this.robot.getLidarReading(this.lidarRange);
-                this.updateDiscoveredMap(this.robot.getAveragedUwbBearing(), lidarReading);
+                const frontiers = this.identifyFrontiers();
+
+                // draw filtered frontiers
+                frontiers.forEach(({ x, y }) => {
+                    ExploredMapCanvasImpl!.drawRectangle(`filtered-frontier-${x}-${y}`, x, y, 1, 1, "blue", "blue", 1);
+                });
+
+                // Sort the frontiers based on distance
+                frontiers.forEach(frontier => {
+                    frontierPriorityQueue.addFrontier({ ...frontier, distance: 0 }, endPosition);
+                });
             }
 
-            // Check if the robot has reached the target position
-            if (this.isPositionsNear(closestFrontier, endPosition, frontierDistanceThreshold)) {
+            if (this.isPositionsNear(frontier, endPosition, frontierDistanceThreshold)) {
                 break;
             }
-
-            await new Promise(resolve => setTimeout(resolve, 90));
-        }
+        } while (!frontierPriorityQueue.isEmpty());
 
         // Perform A* path planning
-        path = AstarPathPlanner.findPath(convertPositionToInt(this.robot.getAveragedUwbBearing()), endPosition, this.discoveredMap);
+        path = AstarPathPlanner.findPath(convertPositionToInt(this.getLatestRobotPosition()), endPosition, this.discoveredMap);
         if (path.length === 0) {
             console.log("No path found");
         } else {
@@ -131,15 +163,9 @@ export class RobotController {
         }
     }
 
-
     private isPositionsNear(position1: Position, position2: Position, comparingDistanceRange: number): boolean {
         const distance = Math.hypot(position1.x - position2.x, position1.y - position2.y);
         return distance <= comparingDistanceRange;
-    }
-
-    private updateDiscoverdMap() {
-        const lidarReading = this.robot.getLidarReading(this.lidarRange);
-        this.updateDiscoveredMap(this.robot.getAveragedUwbBearing(), lidarReading);
     }
 
     private identifyFrontiers(): Position[] {
@@ -149,12 +175,13 @@ export class RobotController {
                 if (this.discoveredMap[y][x] === 1) { // If cell is unknown
                     const neighbors = this.getNeighbors(x, y);
                     if (neighbors.some(([nx, ny]) => this.discoveredMap[ny][nx] === 0)) {
-                        frontiers.push({ x, y });
+                        frontiers.push({ x: x, y: y });
                     }
                 }
             }
         }
-        return frontiers;
+        const reachableFrontiers = frontiers.filter(frontier => this.canMoveToPosition(frontier));
+        return reachableFrontiers;
     }
 
     private getNeighbors(x: number, y: number): [number, number][] {
@@ -166,19 +193,15 @@ export class RobotController {
         return neighbors;
     }
 
+    async moveToFrontierInDiscoveredMap(destination: Position) {
+        const map = this.discoveredMap;
+        this.discoveredMap[destination.y][destination.x] = 0; // Transposed
 
-    moveToPosition(position: Position) {
-        const { direction, distance } = this.getDirectionCommandToTravel(position);
-        this.moveRobot(direction, distance);
-    }
-
-    async moveAlongPath(destination: Position) {
-        const path = AstarPathPlanner.findPath(this.robot.getAveragedUwbBearing(), destination, this.discoveredMap);
+        const path = AstarPathPlanner.findPath(this.getLatestRobotPosition(), destination, map);
         for (let i = 1; i < path.length; i++) {
             const position = path[i];
             const { direction, distance } = this.getDirectionCommandToTravel(position);
-            this.moveRobot(direction, distance);
-            await new Promise(resolve => setTimeout(resolve, 90));
+            await this.moveRobot(direction, distance);
         }
     }
 
@@ -203,7 +226,7 @@ export class RobotController {
 
     private getDirectionCommandToTravel(position: Position): { direction: Direction, distance: number } {
         // get the average position
-        let robotPosition = this.robot.getAveragedUwbBearing();
+        let robotPosition = {x: this.robot.x, y: this.robot.y};
 
         const dx = position.x - robotPosition.x;
         const dy = position.y - robotPosition.y;
@@ -233,7 +256,10 @@ export class RobotController {
         return { direction, distance };
     }
 
-    private updateDiscoveredMap(position: Position, lidarReading: SurroundingDistances) {
+    private async updateDiscoveredMap() {
+        const lidarReading = this.robot.getLidarReading(this.lidarRange);
+        const position = this.getLatestRobotPosition();
+
         const x = Math.floor(position.x);
         const y = Math.floor(position.y);
         this.discoveredMap[y][x] = 0; // Note the transposition here
@@ -282,13 +308,14 @@ export class RobotController {
         }
 
         if (ExploredMapCanvasImpl) {
-            newPositions.forEach(({ x, y }) => {
+            for (let i = 0; i < newPositions.length; i++) {
+                const { x, y } = newPositions[i];
                 ExploredMapCanvasImpl!.drawRectangle(`discovered-map-${x}-${y}`, x, y, 1, 1, "gray", "gray", 1); // Transposed
-            });
+            }
         }
     }
 
     moveRobot(direction: Direction, distance?: number) {
-        this.robot.move(direction, distance || 1);
+        return this.robot.move(direction, distance || 1);
     }
 }

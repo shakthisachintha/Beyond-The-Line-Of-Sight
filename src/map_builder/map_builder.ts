@@ -1,44 +1,45 @@
+import { globalConfigsProvider } from "../configs";
 import { Canvas, UWBMapCanvasImpl } from "../graphics/graphics";
 import { DrawingColor, Position } from "../types";
 import { humanizeString } from "../utils";
 
 export interface MapEntry {
-    color: DrawingColor
+    color: DrawingColor;
     positions: Position[];
 }
 
 class MapBuilder {
     private map: Map<string, MapEntry> = new Map<string, MapEntry>();
     private canvas: Canvas;
+    private emaAlpha: number;
+    private emaPositions: Map<string, Position>;
 
-    constructor() {
+    constructor(emaAlpha: number) {
         this.canvas = UWBMapCanvasImpl;
-        this.init();
+        this.emaAlpha = emaAlpha;
+        this.emaPositions = new Map<string, Position>();
     }
 
-    registerMap(mapName: string, color: DrawingColor) {
+    registerMap(mapName: string, color: DrawingColor, startingPosition: Position) {
         this.map.set(mapName, { color, positions: [] });
+        this.emaPositions.set(mapName, startingPosition);
         this.drawMapLegend();
     }
 
     addPosition(mapName: string, position: Position) {
         const mapEntry = this.map.get(mapName);
         if (mapEntry) {
-            // if last position is the same as the new one, do not add it
-            const lastPosition = mapEntry.positions[mapEntry.positions.length - 1];
-            if (lastPosition && lastPosition?.x !== position.x || lastPosition?.y !== position.y) {
-                // if current position is within the 1 radius circle of the last position, do not add it
-                if (mapEntry.positions.length > 0) {
-                    const distance = Math.sqrt(Math.pow(position.x - lastPosition?.x, 2) + Math.pow(position.y - lastPosition?.y, 2));
-                    if (distance > 2) {
-                        mapEntry.positions.push(position);
-                        this.drawMapLinePolygon(mapName);
-                    }
-                } else {
-                    mapEntry.positions.push(position);
-                    this.drawMapLinePolygon(mapName);
-                }
-            }
+            // Update EMA
+            const lastEmaPosition = this.emaPositions.get(mapName) || { x: 0, y: 0 };
+            const emaPosition = {
+                x: this.emaAlpha * position.x + (1 - this.emaAlpha) * lastEmaPosition.x,
+                y: this.emaAlpha * position.y + (1 - this.emaAlpha) * lastEmaPosition.y
+            };
+            this.emaPositions.set(mapName, emaPosition);
+
+            // Add smoothed position
+            mapEntry.positions.push(emaPosition);
+            this.drawMapLinePolygon(mapName);
         }
     }
 
@@ -51,7 +52,7 @@ class MapBuilder {
         this.map.forEach((map, mapName) => {
             this.canvas.drawCircle(`${mapName}-legend`, 3, 4 + index * 4, 1, map.color, map.color, 1);
             this.canvas.drawText(`${mapName}-legend-text`, 5, 2.8 + index * 4, humanizeString(mapName), map.color, 2.5);
-            index++
+            index++;
         });
     }
 
@@ -72,35 +73,27 @@ class MapBuilder {
                 map.positions[map.positions.length - 1].y, 0.5, map.color, map.color, 1);
         }
     }
-
-    init() {
-        this.canvas.setScale(5);
-        this.canvas.drawBackdrop({ width: 100, height: 100, fillColor: "#FFFFF1", strokeColor: 'black' });
-    }
-
 }
 
-const mapBuilder = new MapBuilder();
+const mapBuilder = new MapBuilder(globalConfigsProvider.getConfig("emaAlpha"));
 
-export const getMapBuilder = (mapName: string, color: DrawingColor = DrawingColor.BLUE) => {
-    if (!mapBuilder.getMap(mapName))
-        mapBuilder.registerMap(mapName, color as DrawingColor);
+export interface MapBuilderInstance {
+    addPosition: (position: Position) => void;
+    getMap: () => MapEntry | undefined;
+    getCurrentPosition: () => Position;
+}
+
+export const getMapBuilder = (mapName: string, startingPosition: Position, color: DrawingColor = DrawingColor.BLUE): MapBuilderInstance => {
+    if (!mapBuilder.getMap(mapName)) {
+        mapBuilder.registerMap(mapName, color as DrawingColor, startingPosition);
+    }
     return {
         addPosition: (position: Position) => mapBuilder.addPosition(mapName, position),
         getMap: () => mapBuilder.getMap(mapName),
-        // @ts-ignore
         getCurrentPosition: () => {
             const map = mapBuilder.getMap(mapName);
-            // get last 3 points and average them
-            const positions = map?.positions.slice(-3);
-
-            if (positions && positions.length === 3) {
-                const x = positions.reduce((acc, pos) => acc + pos.x, 0) / 3;
-                const y = positions.reduce((acc, pos) => acc + pos.y, 0) / 3;
-                return { x, y };
-            } else {
-                return { x: 0, y: 0 };
-            }
+            const lastPosition = map?.positions[map.positions.length - 1];
+            return lastPosition || { x: 0, y: 0 };
         }
-    }
-}
+    };
+};

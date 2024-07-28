@@ -11,7 +11,7 @@ export class Environment {
     private backgroundColor: string = "#FFFFF1";
     private objects: BaseObject[] = [];
     private canvas: Canvas;
-    private inflateFactor: number = 2;
+    private inflateFactor: number = globalConfigsProvider.getConfig("obstacleInflationFactor");
 
     constructor(width: number, height: number, canvas: Canvas) {
         this.canvas = canvas;
@@ -35,10 +35,11 @@ export class Environment {
         this.objects.push(object);
         object.setCanvas(this.canvas);
         object.draw();
-        // draw the inflated obstacles
-        if (object instanceof Obstacle) {
-            const inflatedObstacle = new Obstacle(object.width + this.inflateFactor, object.height + this.inflateFactor, object.x - this.inflateFactor / 2, object.y - this.inflateFactor / 2);
-            this.canvas.drawRectangle(inflatedObstacle.getID(), inflatedObstacle.x, inflatedObstacle.y, inflatedObstacle.width, inflatedObstacle.height, "transparent", "red", 1);
+        if (globalConfigsProvider.getConfig("showInflatedObstacles")) {
+            if (object instanceof Obstacle) {
+                const inflatedObstacle = new Obstacle(object.width + this.inflateFactor, object.height + this.inflateFactor, object.x - this.inflateFactor / 2, object.y - this.inflateFactor / 2);
+                this.canvas.drawRectangle(inflatedObstacle.getID(), inflatedObstacle.x, inflatedObstacle.y, inflatedObstacle.width, inflatedObstacle.height, "transparent", "red", 1);
+            }
         }
     }
 
@@ -80,7 +81,7 @@ export class Environment {
             }
         })
         const envBoxLines = getRectangleLines({ x: 0, y: 0 }, 100, 100);
-    
+
         const envBoxLineTop = envBoxLines[0];
         const envBoxLineRight = envBoxLines[1];
         const envBoxLineBottom = envBoxLines[2];

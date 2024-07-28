@@ -12,6 +12,7 @@ export class Human extends MovableObject {
 
     draw(): void {
         this.canvas?.drawCircle(this.id, this.x, this.y, this.radius, this.fillColor, this.stroke, 1);
+        this.canvas?.drawText(this.id, this.x, this.y + 2, "   Human", "blue", 2);
     }
 
     constructor(x: number, y: number, env: Environment) {

@@ -56,6 +56,13 @@ export function humanizeString(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+export function humanizeCamelCase(str: string): string {
+    // insert space before the upper case letter
+    return str.replace(/([A-Z])/g, ' $1')
+        // capitalize first letter
+        .replace(/^./, str => str.toUpperCase());
+}
+
 export function getPositionFromUwbBearing(readings: TagBearing[]): Position {
     // Check if there are exactly 3 readings
     if (readings.length !== 3)
