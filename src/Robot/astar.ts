@@ -20,12 +20,9 @@ export class AstarPathPlanner {
         const closedList: Set<string> = new Set();
         const startNode = new PathNode(start, null, 0, 0, 0);
         const endNode = new PathNode(end, null, 0, 0, 0);
-
         startNode.h = heuristic(start, end);
         startNode.f = startNode.g + startNode.h;
-
         openList.push(startNode);
-
         const getNeighbors = (node: PathNode): PathNode[] => {
             const { x, y } = node.position;
             const neighbors: PathNode[] = [];
@@ -35,7 +32,6 @@ export class AstarPathPlanner {
                 [-1, 0], // up 
                 [1, 0] // down
             ];
-
             for (const [dx, dy] of directions) {
                 const nx = x + dx;
                 const ny = y + dy;
@@ -45,9 +41,6 @@ export class AstarPathPlanner {
             }
             return neighbors;
         };
-
-
-
         const reconstructPath = (endNode: PathNode): Position[] => {
             const path: Position[] = [];
             let currentNode: PathNode | null = endNode;
@@ -57,34 +50,28 @@ export class AstarPathPlanner {
             }
             return path.reverse();
         };
-
         while (openList.length > 0) {
             let currentNode = openList.reduce((prev, curr) => (prev.f < curr.f ? prev : curr));
-
             if (currentNode.position.x === endNode.position.x && currentNode.position.y === endNode.position.y) {
                 return reconstructPath(currentNode);
             }
-
             openList.splice(openList.indexOf(currentNode), 1);
             closedList.add(`${currentNode.position.x},${currentNode.position.y}`);
-
             const neighbors = getNeighbors(currentNode);
             for (const neighbor of neighbors) {
                 if (closedList.has(`${neighbor.position.x},${neighbor.position.y}`)) {
                     continue;
                 }
-
                 neighbor.g = currentNode.g + 1;
                 neighbor.h = heuristic(neighbor.position, endNode.position);
                 neighbor.f = neighbor.g + neighbor.h;
-
-                const existingNode = openList.find(node => node.position.x === neighbor.position.x && node.position.y === neighbor.position.y);
+                const existingNode = openList.find(node => node.position.x === neighbor.position.x 
+                    && node.position.y === neighbor.position.y);
                 if (!existingNode || neighbor.g < existingNode.g) {
                     openList.push(neighbor);
                 }
             }
         }
-
         return []; // No path found
     }
 }

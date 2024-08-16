@@ -11,8 +11,6 @@ import { getMapBuilder } from '../map_builder/map_builder';
 import { getPositionFromUwbBearing } from '../utils';
 import { RobotController } from '../robot/robot_controller';
 
-// create a random environment with obstacles
-// the paths should have a width of 20
 const configs = {
     scale: globalConfigsProvider.getConfig("mapScale"),
     env: {
@@ -37,9 +35,6 @@ const configs = {
 
 
 function createEnvironment(configs: any, canvas: Canvas) {
-    // should normalize the configs
-    // obstacles are created in a scale where 100,100 env.
-    // should normalize the obstacles to the environment scale
     const env = new Environment(configs.env.width, configs.env.height, canvas);
     configs.obstacles.forEach((config: any) => {
         const obstacle = new Obstacle(config.dims[0], config.dims[1], config.cords[0], config.cords[1]);

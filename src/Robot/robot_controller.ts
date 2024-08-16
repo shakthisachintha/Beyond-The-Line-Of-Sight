@@ -39,7 +39,7 @@ export class RobotController {
     private lidarRange = 5;
     private robotTravelMap: MapBuilderInstance;
 
-    constructor(robot: Robot, robotTravelMap: MapBuilderInstance,canvas?: Canvas) {
+    constructor(robot: Robot, robotTravelMap: MapBuilderInstance, canvas?: Canvas) {
         this.robot = robot;
         this.canvas = canvas;
         this.robotTravelMap = robotTravelMap;
@@ -72,47 +72,24 @@ export class RobotController {
         await this.moveAlongPath(path);
     }
 
-    private drawAStarPath(path: Position[]) {
-        if (globalConfigsProvider.getConfig("showAstarPath") && this.canvas) {
-            this.canvas.removeSimilarObjects("a*path");
-            path.slice(0, path.length - 5).forEach((pos, idx) => {
-                this.canvas!.drawRectangle("a*path" + idx, pos.x, pos.y, 0.5, 0.5, "red", "red", 0.5);
-            });
-        }
-    }
-
     async handleOcclusionInUnknownEnvironment(targetPosition: Position) {
         const endPosition = convertPositionToInt(targetPosition);
-        const frontierDistanceThreshold = 3; // Set a distance threshold for filtering out similar frontiers
-
+        const frontierDistanceThreshold = 3; // Set a distance threshold for filtering out similar frontiers›
         let path: Position[] = [];
         path = AstarPathPlanner.findPath(convertPositionToInt(this.getLatestRobotPosition()), endPosition, this.discoveredMap);
         if (path.length === 0) {
             console.log("No path found");
         } else {
             // draw path
-            if (this.canvas) {
-                this.canvas.removeSimilarObjects("a*path");
-                path.slice(0, path.length - 5).forEach((pos, idx) => {
-                    this.canvas!.drawRectangle("a*path" + idx, pos.x, pos.y, 0.5, 0.5, "red", "red", 0.5);
-                });
-                // move robot along the path
-                for (let i = 1; i < path.length; i += 1) {
-                    const position = path[i];
-                    const { direction, distance } = this.getDirectionCommandToTravel(position);
-                    await this.moveRobot(direction, distance);
-                }
-            }
+            this.drawAStarPath(path);
+            // move robot along the path
+            await this.moveAlongPath(path);
             return;
         }
-
         // Perform initial scan and update the map
         await this.updateDiscoveredMap();
-
         const frontierPriorityQueue = new FrontiersPriorityQueue();
-
         const frontiers = this.identifyFrontiers();
-
         // Sort the frontiers based on distance
         frontiers.forEach(frontier => {
             frontierPriorityQueue.addFrontier({ ...frontier, distance: 0 }, endPosition);
@@ -120,46 +97,44 @@ export class RobotController {
 
         do {
             const frontier = frontierPriorityQueue.popFrontier();
-
             if (!frontier) {
                 break;
             }
-
             if (this.canMoveToPosition(frontier)) {
                 await this.moveToFrontierInDiscoveredMap(frontier);
-
                 this.updateDiscoveredMap();
-
                 const frontiers = this.identifyFrontiers();
-
                 // draw filtered frontiers
                 frontiers.forEach(({ x, y }) => {
                     ExploredMapCanvasImpl!.drawRectangle(`filtered-frontier-${x}-${y}`, x, y, 1, 1, "blue", "blue", 1);
                 });
-
                 // Sort the frontiers based on distance
                 frontiers.forEach(frontier => {
                     frontierPriorityQueue.addFrontier({ ...frontier, distance: 0 }, endPosition);
                 });
             }
-
             if (this.isPositionsNear(frontier, endPosition, frontierDistanceThreshold)) {
                 break;
             }
         } while (!frontierPriorityQueue.isEmpty());
-
         // Perform A* path planning
         path = AstarPathPlanner.findPath(convertPositionToInt(this.getLatestRobotPosition()), endPosition, this.discoveredMap);
         if (path.length === 0) {
             console.log("No path found");
         } else {
             // draw path
-            if (this.canvas) {
-                this.canvas.removeSimilarObjects("a*path");
-                path.slice(0, path.length - 5).forEach((pos, idx) => {
-                    this.canvas!.drawRectangle("a*path" + idx, pos.x, pos.y, 0.5, 0.5, "red", "red", 0.5);
-                });
-            }
+            this.drawAStarPath(path);
+            // move robot along the path
+            await this.moveAlongPath(path);
+        }
+    }
+
+    private drawAStarPath(path: Position[]) {
+        if (globalConfigsProvider.getConfig("showAstarPath") && this.canvas) {
+            this.canvas.removeSimilarObjects("a*path");
+            path.slice(0, path.length - 5).forEach((pos, idx) => {
+                this.canvas!.drawRectangle("a*path" + idx, pos.x, pos.y, 0.5, 0.5, "red", "red", 0.5);
+            });
         }
     }
 
@@ -197,12 +172,9 @@ export class RobotController {
         const map = this.discoveredMap;
         this.discoveredMap[destination.y][destination.x] = 0; // Transposed
 
-        const path = AstarPathPlanner.findPath(this.getLatestRobotPosition(), destination, map);
-        for (let i = 1; i < path.length; i++) {
-            const position = path[i];
-            const { direction, distance } = this.getDirectionCommandToTravel(position);
-            await this.moveRobot(direction, distance);
-        }
+        const path = AstarPathPlanner.findPath({ x: this.robot.x, y: this.robot.y }, destination, map);
+        this.drawAStarPath(path);
+        await this.moveAlongPath(path);
     }
 
     canMoveToPosition(position: Position): boolean {
@@ -210,23 +182,9 @@ export class RobotController {
         return this.robot.canMove(direction, distance);
     }
 
-    canMoveToDirectionWithLidar(direction: Direction, distance: number): boolean {
-        const lidarReading = this.robot.getLidarReading(this.lidarRange);
-        if (direction === "up") {
-            return lidarReading.up >= distance;
-        } else if (direction === "down") {
-            return lidarReading.down >= distance;
-        } else if (direction === "left") {
-            return lidarReading.left >= distance;
-        } else if (direction === "right") {
-            return lidarReading.right >= distance;
-        }
-        return false;
-    }
-
     private getDirectionCommandToTravel(position: Position): { direction: Direction, distance: number } {
         // get the average position
-        let robotPosition = {x: this.robot.x, y: this.robot.y};
+        let robotPosition = { x: this.robot.x, y: this.robot.y };
 
         const dx = position.x - robotPosition.x;
         const dy = position.y - robotPosition.y;
@@ -258,7 +216,7 @@ export class RobotController {
 
     private async updateDiscoveredMap() {
         const lidarReading = this.robot.getLidarReading(this.lidarRange);
-        const position = this.getLatestRobotPosition();
+        const position = { x: this.robot.x, y: this.robot.y };
 
         const x = Math.floor(position.x);
         const y = Math.floor(position.y);

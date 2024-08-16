@@ -48,10 +48,10 @@ class GlobalConfigsProvider {
         showInflatedObstacles: false,
         robotMoveSpeed: 8,
         mapScale: 7,
-        localizationMapScale: 4,
+        localizationMapScale: 5,
         lidarMapScale: 3,
-        uwbTagErrorPercentage: 0.1,
-        emaAlpha: 0.1
+        uwbTagErrorPercentage: 0.03,
+        emaAlpha: 0.08
     };
     private listeners: Map<configKeys, ((value: any) => void)[]> = new Map();
 
