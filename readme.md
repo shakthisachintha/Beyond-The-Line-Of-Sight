@@ -1,4 +1,4 @@
-# Beyond The Line of Sight (BLOS)
+# Beyond The Line of Sight - Occlusion-Aware Perception for Human-Following Robots
 
 ## Overview
 
@@ -6,16 +6,10 @@ This codebase is the implementation component of a research thesis focused on **
 
 The simulator demonstrates how autonomous robots can navigate complex environments and track human movement using **Ultra-Wideband (UWB) positioning technology** combined with **map-building algorithms** and **intelligent path planning**. This research is particularly relevant for applications in search and rescue operations, indoor navigation, warehouse automation, and assisted living environments where obstacles frequently block direct visibility.
 
-## Simulator Screenshots
+## Demo
 
-<!-- Add your simulator images here -->
-
-![Simulator Interface](images/simulator-interface.png)
+<img width="1571" height="740" alt="simualtor_interface" src="https://github.com/user-attachments/assets/144f5bbb-8ab1-49ff-9668-188e26090ab4" />
 *Main simulator interface showing robot, human, obstacles, and UWB positioning*
-
-![Occlusion Resolution](images/occlusion-resolution.png)
-*Demonstration of NLOS occlusion resolution and pathfinding*
-
 
 ## Research Problem
 
